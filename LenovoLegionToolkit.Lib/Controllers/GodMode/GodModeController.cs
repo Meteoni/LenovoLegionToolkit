@@ -9,6 +9,7 @@ using LenovoLegionToolkit.Lib.Features;
 using LenovoLegionToolkit.Lib.Resources;
 using LenovoLegionToolkit.Lib.Settings;
 using LenovoLegionToolkit.Lib.SoftwareDisabler;
+using LenovoLegionToolkit.Lib.System;
 using LenovoLegionToolkit.Lib.System.Management;
 using LenovoLegionToolkit.Lib.Utils;
 using NvAPIWrapper.GPU;
@@ -19,7 +20,8 @@ public class GodModeController(
     GodModeSettings settings,
     VantageDisabler vantageDisabler,
     LegionZoneDisabler legionZoneDisabler,
-    LegionSpaceDisabler legionSpaceDisabler)
+    LegionSpaceDisabler legionSpaceDisabler,
+    SmartEngineDisabler smartEngineDisabler)
     : IGodModeController
 {
     private const uint CAPABILITY_ID_MASK = 0xFFFF00FF;
@@ -53,6 +55,8 @@ public class GodModeController(
         var mi = await GetMachineInformationAsync().ConfigureAwait(false);
         return mi.SmartFanVersion >= 8;
     }
+
+    public Task<bool> NeedsSmartEngineDisabledAsync() => Task.FromResult(true);
 
     #endregion
 
@@ -194,6 +198,12 @@ public class GodModeController(
             return;
         }
 
+        if (await smartEngineDisabler.GetStatusAsync().ConfigureAwait(false) == SoftwareStatus.Enabled)
+        {
+            Log.Instance.Trace($"Can't correctly apply state when SmartEngine is running.");
+            return;
+        }
+
         Log.Instance.Trace($"Applying state...");
 
         var (presetId, preset) = await GetActivePresetAsync().ConfigureAwait(false);
@@ -305,6 +315,12 @@ public class GodModeController(
         if (await vantageDisabler.GetStatusAsync().ConfigureAwait(false) == SoftwareStatus.Enabled)
         {
             Log.Instance.Trace($"Can't correctly apply state when Vantage is running.");
+            return;
+        }
+
+        if (await smartEngineDisabler.GetStatusAsync().ConfigureAwait(false) == SoftwareStatus.Enabled)
+        {
+            Log.Instance.Trace($"Can't correctly apply state when SmartEngine is running.");
             return;
         }
 
@@ -772,6 +788,14 @@ public class GodModeController(
 
     public async Task RestoreDefaultsInOtherPowerModeAsync(PowerModeState state)
     {
+        var mi = await GetMachineInformationAsync().ConfigureAwait(false);
+
+        if (!mi.Properties.SupportsGodMode)
+        {
+            Log.Instance.Trace($"God Mode not supported. Skipping restoring defaults for {state}...");
+            return;
+        }
+
         var config = await GetConfigAsync().ConfigureAwait(false);
 
         if (config.Platform == GodModePlatform.LegacyLegion)
@@ -1418,20 +1442,27 @@ public class GodModeController(
 
     private async Task<GodModePlatformConfiguration> GetConfigAsync()
     {
-        if (_config != null)
+        if (_config is null)
         {
-            return _config;
+            var mi = await GetMachineInformationAsync().ConfigureAwait(false);
+            _config = mi.Properties.GodModePlatform switch
+            {
+                GodModePlatform.LegacyLegion => GodModePlatformConfiguration.LegacyLegion,
+                GodModePlatform.Legion => GodModePlatformConfiguration.Legion,
+                GodModePlatform.NonGaming => GodModePlatformConfiguration.NonGaming,
+                _ => throw new InvalidOperationException("Unsupported GodMode platform"),
+            };
         }
 
-        var mi = await GetMachineInformationAsync().ConfigureAwait(false);
-        _config = mi.Properties.GodModePlatform switch
-        {
-            GodModePlatform.LegacyLegion => GodModePlatformConfiguration.LegacyLegion,
-            GodModePlatform.Legion => GodModePlatformConfiguration.Legion,
-            GodModePlatform.NonGaming => GodModePlatformConfiguration.NonGaming,
-            _ => throw new InvalidOperationException("Unsupported GodMode platform"),
-        };
-        return _config;
+        var config = _config;
+        var useNvApiCapabilities = !config.Capabilities.Any(IsNvApiCapability) || NVAPI.IsAvailable();
+
+        if (useNvApiCapabilities)
+            return config;
+
+        Log.Instance.Trace($"NVAPI is not available, removing NVAPI capabilities...");
+
+        return config with { Capabilities = config.Capabilities.Where(c => !IsNvApiCapability(c)).ToList() };
     }
 
     private async Task<MachineInformation> GetMachineInformationAsync()

@@ -20,6 +20,7 @@ namespace LenovoLegionToolkit.WPF.Controls.Settings;
 public partial class SettingsPowerControl
 {
     private readonly ApplicationSettings _settings = IoCContainer.Resolve<ApplicationSettings>();
+    private readonly ITSModeSettings _itsModeSettings = IoCContainer.Resolve<ITSModeSettings>();
     private readonly PowerModeFeature _powerModeFeature = IoCContainer.Resolve<PowerModeFeature>();
     private readonly ITSModeFeature _itsModeFeature = IoCContainer.Resolve<ITSModeFeature>();
 
@@ -60,6 +61,9 @@ public partial class SettingsPowerControl
         var isWindowsPowerModeSupported = WindowsPowerModeController.IsOverlaySupported;
         var powerModeMappingMode = _settings.Store.PowerModeMappingMode;
 
+        _restoreITSModeOnStartupCard.Visibility = isITSModeFeatureSupported ? Visibility.Visible : Visibility.Collapsed;
+        _restoreITSModeOnStartupToggle.IsChecked = _itsModeSettings.Store.RestoreStateOnStartup;
+
         if (!isWindowsPowerModeSupported && powerModeMappingMode == PowerModeMappingMode.WindowsPowerMode)
         {
             powerModeMappingMode = PowerModeMappingMode.Disabled;
@@ -78,6 +82,7 @@ public partial class SettingsPowerControl
         _onBatterySinceResetToggle.Visibility = Visibility.Visible;
 
         _godModeFnQSwitchableToggle.Visibility = Visibility.Visible;
+        _restoreITSModeOnStartupToggle.Visibility = Visibility.Visible;
         _powerModeMappingComboBox.Visibility = Visibility.Visible;
 
         _isRefreshing = false;
@@ -183,6 +188,19 @@ public partial class SettingsPowerControl
     private void WindowsPowerPlansControlPanel_Click(object sender, RoutedEventArgs e)
     {
         Process.Start("control", "/name Microsoft.PowerOptions");
+    }
+
+    private void RestoreITSModeOnStartupToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRefreshing)
+            return;
+
+        var state = _restoreITSModeOnStartupToggle.IsChecked;
+        if (state is null)
+            return;
+
+        _itsModeSettings.Store.RestoreStateOnStartup = state.Value;
+        _itsModeSettings.SynchronizeStore();
     }
 
     private void OnBatterySinceResetToggle_Click(object sender, RoutedEventArgs e)

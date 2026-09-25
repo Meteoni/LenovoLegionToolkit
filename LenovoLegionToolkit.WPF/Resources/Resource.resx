@@ -1051,8 +1051,14 @@ Switching modes may require restart.</value>
   <data name="DonatePage_BottomMessage" xml:space="preserve">
     <value>Even if you can't donate, simply using, sharing, and starring the project on GitHub goes a long way. Every bit of support is genuinely appreciated</value>
   </data>
+  <data name="DonatePage_DrSkinner_BuyMeACoffee" xml:space="preserve">
+    <value>Buy Me a Coffee</value>
+  </data>
   <data name="DonatePage_DrSkinner_Description" xml:space="preserve">
     <value>Responsible for core feature development, quality assurance, UI/UX design, and overall project direction as the current project lead.</value>
+  </data>
+  <data name="DonatePage_DrSkinner_GitHubSponsors" xml:space="preserve">
+    <value>GitHub Sponsors</value>
   </data>
   <data name="DonatePage_DrSkinner_Role" xml:space="preserve">
     <value>Core Developer &amp; Project Lead</value>
@@ -1450,6 +1456,9 @@ Do not proceed unless you possess the necessary technical expertise.</value>
   <data name="GodModeSettingsWindow_PartialSupport_Message" xml:space="preserve">
     <value>Your device may not support the full feature set of Custom Mode.</value>
   </data>
+  <data name="GodModeSettingsWindow_SmartEngineWarning_Title" xml:space="preserve">
+    <value>Custom Mode settings will not be applied correctly when Lenovo SmartEngine or its services are running.</value>
+  </data>
   <data name="GodModeSettingsWindow_PrecisionBoostOverdriveBoostFrequency_Description" xml:space="preserve">
     <value>Set the maximum frequency offset allowed beyond the factory default boost clock specification.</value>
   </data>
@@ -1593,6 +1602,12 @@ Click Yes to disable and No to ignore.</value>
   </data>
   <data name="KeyboardBacklightPage_Title" xml:space="preserve">
     <value>Keyboard Backlight</value>
+  </data>
+  <data name="Keyboard_SoftwareEnabledWarning_Message" xml:space="preserve">
+    <value>Keyboard backlight cannot be controlled in here when another Lenovo app or its services are running.</value>
+  </data>
+  <data name="Keyboard_SoftwareEnabledWarning_Title" xml:space="preserve">
+    <value>Another Lenovo app or its services are running</value>
   </data>
   <data name="Keyboard_VantageEnabledWarning_Message" xml:space="preserve">
     <value>Keyboard backlight cannot be controlled in here when Lenovo Vantage or its services are running.</value>
@@ -1809,6 +1824,9 @@ Click Yes to disable and No to ignore.</value>
   </data>
   <data name="MainWindow_LegionZoneRunning" xml:space="preserve">
     <value>Legion Zone is running in the background.</value>
+  </data>
+  <data name="MainWindow_SmartEngineRunning" xml:space="preserve">
+    <value>Lenovo SmartEngine is running in the background.</value>
   </data>
   <data name="MainWindow_NavigationItem_About" xml:space="preserve">
     <value>About</value>
@@ -2901,6 +2919,12 @@ Performance mode can also be changed with Fn+Q.</value>
   <data name="SensorSettingsPage_CPU_Frequency_Title" xml:space="preserve">
     <value>CPU Frequency</value>
   </data>
+  <data name="SensorSettingsPage_CPU_Temperature_Source_Message" xml:space="preserve">
+    <value>Choose which CPU temperature sensor is displayed on the Dashboard and OSD.</value>
+  </data>
+  <data name="SensorSettingsPage_CPU_Temperature_Source_Title" xml:space="preserve">
+    <value>CPU Temperature Source</value>
+  </data>
   <data name="SensorSettingsPage_Discrete_GPU_Title" xml:space="preserve">
     <value>dGPU</value>
   </data>
@@ -2924,6 +2948,18 @@ Performance mode can also be changed with Fn+Q.</value>
   </data>
   <data name="SensorSettingsPage_Preferred_GPU_Title" xml:space="preserve">
     <value>Preferred GPU</value>
+  </data>
+  <data name="SensorSettingsPage_TemperatureSource_Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="SensorSettingsPage_TemperatureSource_Average" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="SensorSettingsPage_TemperatureSource_CoreMax" xml:space="preserve">
+    <value>Core Max</value>
+  </data>
+  <data name="SensorSettingsPage_TemperatureSource_Package" xml:space="preserve">
+    <value>Package</value>
   </data>
   <data name="SensorSettingsPage_Used_Memory_GB_Title" xml:space="preserve">
     <value>Used/Total Memory (GB)</value>
@@ -3136,6 +3172,21 @@ If disabled, this app will handle Fn shortcuts.</value>
   <data name="SettingsPage_DisableLenovoHotkeys_Title" xml:space="preserve">
     <value>Disable Lenovo Hotkeys</value>
   </data>
+  <data name="SettingsPage_DisableSmartEngine_Error_Message" xml:space="preserve">
+    <value>Lenovo SmartEngine may have not been disabled correctly</value>
+  </data>
+  <data name="SettingsPage_DisableSmartEngine_Error_Title" xml:space="preserve">
+    <value>Couldn't disable Lenovo SmartEngine</value>
+  </data>
+  <data name="SettingsPage_DisableSmartEngine_Message" xml:space="preserve">
+    <value>Disable the SmartEngine components shared by Legion Space and Legion Zone without uninstalling them.</value>
+  </data>
+  <data name="SettingsPage_DisableSmartEngine_Title" xml:space="preserve">
+    <value>Disable Lenovo SmartEngine</value>
+  </data>
+  <data name="SettingsPage_DisableIncomplete_Title" xml:space="preserve">
+    <value>Couldn't fully disable, it may still be running</value>
+  </data>
   <data name="SettingsPage_DisableVantage_Error_Message" xml:space="preserve">
     <value>Lenovo Vantage and/or ImController may have not been disabled correctly</value>
   </data>
@@ -3171,6 +3222,12 @@ If disabled, this app will handle Fn shortcuts.</value>
   </data>
   <data name="SettingsPage_EnableLogging_Title" xml:space="preserve">
     <value>Enable Logging</value>
+  </data>
+  <data name="SettingsPage_EnableSmartEngine_Error_Message" xml:space="preserve">
+    <value>Lenovo SmartEngine may have not been enabled correctly</value>
+  </data>
+  <data name="SettingsPage_EnableSmartEngine_Error_Title" xml:space="preserve">
+    <value>Couldn't enable Lenovo SmartEngine</value>
   </data>
   <data name="SettingsPage_EnableVantage_Error_Message" xml:space="preserve">
     <value>Lenovo Vantage and/or ImController may have not been enabled correctly</value>
@@ -3279,6 +3336,12 @@ If disabled, this app will handle Fn shortcuts.</value>
   </data>
   <data name="SettingsPage_PowerModeMapping_Title" xml:space="preserve">
     <value>Power Mode Synchronization</value>
+  </data>
+  <data name="SettingsPage_RestoreITSModeOnStartup_Message" xml:space="preserve">
+    <value>Reapply the last used ITS mode when the app starts.</value>
+  </data>
+  <data name="SettingsPage_RestoreITSModeOnStartup_Title" xml:space="preserve">
+    <value>Restore ITS mode on startup</value>
   </data>
   <data name="SettingsPage_RememberWindowPosition_Message" xml:space="preserve">
     <value>Restore previous window position on application launch.</value>
@@ -3420,6 +3483,9 @@ If disabled, this app will handle Fn shortcuts.</value>
   </data>
   <data name="Snackbar_SettingsApplied_Message" xml:space="preserve">
     <value>Settings applied successfully.</value>
+  </data>
+  <data name="Snackbar_SettingsNotApplied_Message" xml:space="preserve">
+    <value>Settings were saved but not applied to the GPU.</value>
   </data>
   <data name="SpeakerAutomationStepControl_Message" xml:space="preserve">
     <value>When mute, all active audio output devices will be muted.</value>

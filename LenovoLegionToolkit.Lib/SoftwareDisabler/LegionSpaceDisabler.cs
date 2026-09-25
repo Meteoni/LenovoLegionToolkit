@@ -1,40 +1,33 @@
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace LenovoLegionToolkit.Lib.SoftwareDisabler;
 
 public class LegionSpaceDisabler : AbstractSoftwareDisabler
 {
-    protected override IEnumerable<string> ScheduledTasksPaths =>
-    [
-        "Lenovo\\LegionSpace",
-        "Lenovo\\SmartEngine"
-    ];
+    protected override IEnumerable<string> ScheduledTasksPaths => [];
 
     protected override IEnumerable<string> ServiceNames =>
     [
-        "DAService",
-        "GAService",
-        "LenovoLightingService",
-        "LenovoSmartService"
+        "DAService"
     ];
 
     protected override IEnumerable<string> ProcessNames =>
     [
         "Bino3D",
-        "GACapture",
-        "GAController",
-        "GAHighlight",
-        "GAInference",
-        "GAInferOCR",
-        "GAService",
-        "GAWorker",
         "LegionGameWidget",
         "LegionSpace",
-        "LenovoLighting",
-        "LSDaemon",
-        "SEGameHLEditorWorker",
-        "SEGameTool",
-        "seworker",
-        "SmartEngineHost"
+        "LegionSpaceComponent",
+        "LegionSpaceToast",
+        "LSDaemon"
     ];
+
+    protected override IEnumerable<string> OwnershipRoots =>
+    [
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Lenovo", "LegionSpace"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Lenovo", "LegionSpace")
+    ];
+
+    protected override IEnumerable<string> OwnershipPathMarkers => ["LegionSpace", "LSDaemon"];
 }

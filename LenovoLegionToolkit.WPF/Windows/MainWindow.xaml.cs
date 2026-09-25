@@ -45,6 +45,7 @@ public partial class MainWindow
     private readonly VantageDisabler _vantageDisabler = IoCContainer.Resolve<VantageDisabler>();
     private readonly LegionSpaceDisabler _legionSpaceDisabler = IoCContainer.Resolve<LegionSpaceDisabler>();
     private readonly LegionZoneDisabler _legionZoneDisabler = IoCContainer.Resolve<LegionZoneDisabler>();
+    private readonly SmartEngineDisabler _smartEngineDisabler = IoCContainer.Resolve<SmartEngineDisabler>();
     private readonly FnKeysDisabler _fnKeysDisabler = IoCContainer.Resolve<FnKeysDisabler>();
     private readonly INavigationService _extensionNavigationService = IoCContainer.Resolve<INavigationService>();
     private readonly UpdateChecker _updateChecker = IoCContainer.Resolve<UpdateChecker>();
@@ -56,6 +57,9 @@ public partial class MainWindow
 
     private TrayHelper? _trayHelper;
     private bool _windowSizeLocked;
+
+    private string? _cachedBackgroundImagePath;
+    private BitmapImage? _cachedBackgroundImage;
 
     public bool TrayTooltipEnabled { get; init; } = true;
     public bool DisableConflictingSoftwareWarning { get; set; }
@@ -392,6 +396,11 @@ public partial class MainWindow
             _legionZoneIndicator.Visibility = e.Status == SoftwareStatus.Enabled ? Visibility.Visible : Visibility.Collapsed;
         });
 
+        _smartEngineDisabler.OnRefreshed += async (_, e) => await Dispatcher.InvokeAsync(() =>
+        {
+            _smartEngineIndicator.Visibility = e.Status == SoftwareStatus.Enabled ? Visibility.Visible : Visibility.Collapsed;
+        });
+
         _fnKeysDisabler.OnRefreshed += async (_, e) => await Dispatcher.InvokeAsync(() =>
         {
             _fnKeysIndicator.Visibility = e.Status == SoftwareStatus.Enabled ? Visibility.Visible : Visibility.Collapsed;
@@ -402,6 +411,7 @@ public partial class MainWindow
             _ = await _vantageDisabler.GetStatusAsync().ConfigureAwait(false);
             _ = await _legionSpaceDisabler.GetStatusAsync().ConfigureAwait(false);
             _ = await _legionZoneDisabler.GetStatusAsync().ConfigureAwait(false);
+            _ = await _smartEngineDisabler.GetStatusAsync().ConfigureAwait(false);
             _ = await _fnKeysDisabler.GetStatusAsync().ConfigureAwait(false);
         });
     }
@@ -548,11 +558,22 @@ public partial class MainWindow
 
     public void SetMainWindowBackgroundImage(string filePath)
     {
+        if (_cachedBackgroundImage is not null && _cachedBackgroundImagePath == filePath)
+        {
+            _backgroundImage.ImageSource = _cachedBackgroundImage;
+            return;
+        }
+
         BitmapImage bitmap = new BitmapImage();
         bitmap.BeginInit();
         bitmap.UriSource = new Uri(filePath);
         bitmap.CacheOption = BitmapCacheOption.OnLoad;
         bitmap.EndInit();
+        bitmap.Freeze();
+
+        _cachedBackgroundImagePath = filePath;
+        _cachedBackgroundImage = bitmap;
+
         _backgroundImage.ImageSource = bitmap;
     }
 

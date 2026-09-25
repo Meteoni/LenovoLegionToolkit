@@ -24,10 +24,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Rectangle
-            Grid.RowSpan="7"
+            Grid.RowSpan="8"
             IsHitTestVisible="False">
             <Rectangle.Fill>
                 <ImageBrush x:Name="_backgroundImage" />
@@ -39,7 +40,7 @@
 
         <Rectangle
             x:Name="_backgroundDimOverlay"
-            Grid.RowSpan="7"
+            Grid.RowSpan="8"
             Fill="{DynamicResource ApplicationBackgroundBrush}"
             IsHitTestVisible="False" />
 
@@ -106,7 +107,9 @@
                 Cursor=""
                 Frame="{Binding ElementName=_rootFrame}"
                 Navigated="NavigationStore_Navigated"
-                SelectedPageIndex="0">
+                SelectedPageIndex="0"
+                TransitionDuration="100"
+                TransitionType="FadeIn">
 
                 <wpfui:NavigationStore.Items>
                     <custom:NavigationItem
@@ -271,9 +274,30 @@
             </StackPanel>
         </Border>
 
+
+        <Border
+            x:Name="_smartEngineIndicator"
+            Grid.Row="5"
+            Padding="8,4,8,6"
+            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+            Cursor="Hand"
+            MouseLeftButtonDown="SoftwareIndicator_MouseLeftButtonDown"
+            Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <wpfui:SymbolIcon
+                    Margin="0,0,4,0"
+                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                    Symbol="Warning24" />
+                <TextBlock
+                    Focusable="True"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{x:Static resources:Resource.MainWindow_SmartEngineRunning}" />
+            </StackPanel>
+        </Border>
+
         <Border
             x:Name="_fnKeysIndicator"
-            Grid.Row="5"
+            Grid.Row="6"
             Padding="8,4,8,6"
             Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
             Cursor="Hand"
@@ -293,7 +317,7 @@
 
         <Border
             x:Name="_updateIndicator"
-            Grid.Row="6"
+            Grid.Row="7"
             Padding="8,4,8,6"
             Background="{DynamicResource SystemFillColorSuccessBackgroundBrush}"
             Cursor="Hand"

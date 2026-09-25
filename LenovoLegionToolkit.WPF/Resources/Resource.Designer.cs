@@ -2854,11 +2854,29 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Buy Me a Coffee.
+        /// </summary>
+        public static string DonatePage_DrSkinner_BuyMeACoffee {
+            get {
+                return ResourceManager.GetString("DonatePage_DrSkinner_BuyMeACoffee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Responsible for core feature development, quality assurance, UI/UX design, and overall project direction as the current project lead..
         /// </summary>
         public static string DonatePage_DrSkinner_Description {
             get {
                 return ResourceManager.GetString("DonatePage_DrSkinner_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GitHub Sponsors.
+        /// </summary>
+        public static string DonatePage_DrSkinner_GitHubSponsors {
+            get {
+                return ResourceManager.GetString("DonatePage_DrSkinner_GitHubSponsors", resourceCulture);
             }
         }
         
@@ -4078,6 +4096,15 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom Mode settings will not be applied correctly when Lenovo SmartEngine or its services are running..
+        /// </summary>
+        public static string GodModeSettingsWindow_SmartEngineWarning_Title {
+            get {
+                return ResourceManager.GetString("GodModeSettingsWindow_SmartEngineWarning_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom Mode Settings.
         /// </summary>
         public static string GodModeSettingsWindow_Title {
@@ -4435,6 +4462,24 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string ITSModeControl_Title {
             get {
                 return ResourceManager.GetString("ITSModeControl_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keyboard backlight cannot be controlled in here when another Lenovo app or its services are running..
+        /// </summary>
+        public static string Keyboard_SoftwareEnabledWarning_Message {
+            get {
+                return ResourceManager.GetString("Keyboard_SoftwareEnabledWarning_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Another Lenovo app or its services are running.
+        /// </summary>
+        public static string Keyboard_SoftwareEnabledWarning_Title {
+            get {
+                return ResourceManager.GetString("Keyboard_SoftwareEnabledWarning_Title", resourceCulture);
             }
         }
         
@@ -5175,6 +5220,15 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string MainWindow_NavigationItem_Settings {
             get {
                 return ResourceManager.GetString("MainWindow_NavigationItem_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lenovo SmartEngine is running in the background..
+        /// </summary>
+        public static string MainWindow_SmartEngineRunning {
+            get {
+                return ResourceManager.GetString("MainWindow_SmartEngineRunning", resourceCulture);
             }
         }
         
@@ -8346,6 +8400,24 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Choose which CPU temperature sensor is displayed on the Dashboard and OSD..
+        /// </summary>
+        public static string SensorSettingsPage_CPU_Temperature_Source_Message {
+            get {
+                return ResourceManager.GetString("SensorSettingsPage_CPU_Temperature_Source_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CPU Temperature Source.
+        /// </summary>
+        public static string SensorSettingsPage_CPU_Temperature_Source_Title {
+            get {
+                return ResourceManager.GetString("SensorSettingsPage_CPU_Temperature_Source_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to dGPU.
         /// </summary>
         public static string SensorSettingsPage_Discrete_GPU_Title {
@@ -8414,6 +8486,42 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string SensorSettingsPage_Preferred_GPU_Title {
             get {
                 return ResourceManager.GetString("SensorSettingsPage_Preferred_GPU_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto.
+        /// </summary>
+        public static string SensorSettingsPage_TemperatureSource_Auto {
+            get {
+                return ResourceManager.GetString("SensorSettingsPage_TemperatureSource_Auto", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Average.
+        /// </summary>
+        public static string SensorSettingsPage_TemperatureSource_Average {
+            get {
+                return ResourceManager.GetString("SensorSettingsPage_TemperatureSource_Average", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Core Max.
+        /// </summary>
+        public static string SensorSettingsPage_TemperatureSource_CoreMax {
+            get {
+                return ResourceManager.GetString("SensorSettingsPage_TemperatureSource_CoreMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package.
+        /// </summary>
+        public static string SensorSettingsPage_TemperatureSource_Package {
+            get {
+                return ResourceManager.GetString("SensorSettingsPage_TemperatureSource_Package", resourceCulture);
             }
         }
         
@@ -8958,6 +9066,15 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Couldn&apos;t fully disable, it may still be running.
+        /// </summary>
+        public static string SettingsPage_DisableIncomplete_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_DisableIncomplete_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Legion Space may have not been disabled correctly.
         /// </summary>
         public static string SettingsPage_DisableLegionSpace_Error_Message {
@@ -9067,6 +9184,42 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lenovo SmartEngine may have not been disabled correctly.
+        /// </summary>
+        public static string SettingsPage_DisableSmartEngine_Error_Message {
+            get {
+                return ResourceManager.GetString("SettingsPage_DisableSmartEngine_Error_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Couldn&apos;t disable Lenovo SmartEngine.
+        /// </summary>
+        public static string SettingsPage_DisableSmartEngine_Error_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_DisableSmartEngine_Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable the SmartEngine components shared by Legion Space and Legion Zone without uninstalling them..
+        /// </summary>
+        public static string SettingsPage_DisableSmartEngine_Message {
+            get {
+                return ResourceManager.GetString("SettingsPage_DisableSmartEngine_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Lenovo SmartEngine.
+        /// </summary>
+        public static string SettingsPage_DisableSmartEngine_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_DisableSmartEngine_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lenovo Vantage and/or ImController may have not been disabled correctly.
         /// </summary>
         public static string SettingsPage_DisableVantage_Error_Message {
@@ -9171,6 +9324,24 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string SettingsPage_EnableLogging_Title {
             get {
                 return ResourceManager.GetString("SettingsPage_EnableLogging_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lenovo SmartEngine may have not been enabled correctly.
+        /// </summary>
+        public static string SettingsPage_EnableSmartEngine_Error_Message {
+            get {
+                return ResourceManager.GetString("SettingsPage_EnableSmartEngine_Error_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Couldn&apos;t enable Lenovo SmartEngine.
+        /// </summary>
+        public static string SettingsPage_EnableSmartEngine_Error_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_EnableSmartEngine_Error_Title", resourceCulture);
             }
         }
         
@@ -9495,6 +9666,24 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string SettingsPage_PowerModeMapping_Title {
             get {
                 return ResourceManager.GetString("SettingsPage_PowerModeMapping_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reapply the last used ITS mode when the app starts..
+        /// </summary>
+        public static string SettingsPage_RestoreITSModeOnStartup_Message {
+            get {
+                return ResourceManager.GetString("SettingsPage_RestoreITSModeOnStartup_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore ITS mode on startup.
+        /// </summary>
+        public static string SettingsPage_RestoreITSModeOnStartup_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_RestoreITSModeOnStartup_Title", resourceCulture);
             }
         }
         
@@ -9900,6 +10089,15 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string Snackbar_SettingsApplied_Message {
             get {
                 return ResourceManager.GetString("Snackbar_SettingsApplied_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings were saved but not applied to the GPU..
+        /// </summary>
+        public static string Snackbar_SettingsNotApplied_Message {
+            get {
+                return ResourceManager.GetString("Snackbar_SettingsNotApplied_Message", resourceCulture);
             }
         }
         
