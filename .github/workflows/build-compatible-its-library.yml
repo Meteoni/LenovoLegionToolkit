@@ -40,11 +40,11 @@ jobs:
             $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
 
             if ($assemblyName.Version -ne [Version]"2.36.1.18") {
-              throw "Unexpected assembly version for $dllPath: $($assemblyName.Version)"
+              throw "Unexpected assembly version for ${dllPath}: $($assemblyName.Version)"
             }
 
             if ($fileVersion -ne "2.36.1.18") {
-              throw "Unexpected file version for $dllPath: $fileVersion"
+              throw "Unexpected file version for ${dllPath}: $fileVersion"
             }
 
             Write-Host "Verified $($assemblyName.Name), Version=$($assemblyName.Version), FileVersion=$fileVersion"
