@@ -1,0 +1,52 @@
+name: Build Compatible ITS Library
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - its-startup-restore-toggle-2.36.1.18
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore library
+        run: dotnet restore LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj
+
+      - name: Publish compatible library
+        run: dotnet publish LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj -c Release -o build-lib /p:DebugType=None /p:Version=2.36.1.18 /p:FileVersion=2.36.1.18
+
+      - name: Verify assembly identity
+        shell: powershell
+        run: |
+          $dllPath = Join-Path $PWD "build-lib/LenovoLegionToolkit.Lib.dll"
+          $assemblyName = [Reflection.AssemblyName]::GetAssemblyName($dllPath)
+          $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
+
+          if ($assemblyName.Version -ne [Version]"2.36.1.18") {
+            throw "Unexpected assembly version: $($assemblyName.Version)"
+          }
+
+          if ($fileVersion -ne "2.36.1.18") {
+            throw "Unexpected file version: $fileVersion"
+          }
+
+          Write-Host "Verified $($assemblyName.Name), Version=$($assemblyName.Version), FileVersion=$fileVersion"
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: LenovoLegionToolkit.Lib-2.36.1.18-ITS-startup-toggle
+          path: build-lib/LenovoLegionToolkit.Lib.dll
+          if-no-files-found: error
