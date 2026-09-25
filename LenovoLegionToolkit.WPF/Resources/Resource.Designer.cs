@@ -9670,6 +9670,24 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reapply the last used ITS mode when the app starts..
+        /// </summary>
+        public static string SettingsPage_RestoreITSModeOnStartup_Message {
+            get {
+                return ResourceManager.GetString("SettingsPage_RestoreITSModeOnStartup_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore ITS mode on startup.
+        /// </summary>
+        public static string SettingsPage_RestoreITSModeOnStartup_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_RestoreITSModeOnStartup_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restore previous window position on application launch..
         /// </summary>
         public static string SettingsPage_RememberWindowPosition_Message {
