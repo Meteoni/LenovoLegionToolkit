@@ -21,32 +21,40 @@ jobs:
           cache: true
           cache-dependency-path: '**/*.csproj'
 
-      - name: Restore library
-        run: dotnet restore LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj
+      - name: Restore application
+        run: dotnet restore LenovoLegionToolkit.WPF/LenovoLegionToolkit.WPF.csproj
 
-      - name: Publish compatible library
-        run: dotnet publish LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj -c Release -o build-lib /p:DebugType=None /p:Version=2.36.1.18 /p:FileVersion=2.36.1.18
+      - name: Publish compatible application assemblies
+        run: dotnet publish LenovoLegionToolkit.WPF/LenovoLegionToolkit.WPF.csproj -c Release -o build-patch /p:DebugType=None /p:Version=2.36.1.18 /p:FileVersion=2.36.1.18
 
-      - name: Verify assembly identity
+      - name: Verify assembly identities
         shell: powershell
         run: |
-          $dllPath = Join-Path $PWD "build-lib/LenovoLegionToolkit.Lib.dll"
-          $assemblyName = [Reflection.AssemblyName]::GetAssemblyName($dllPath)
-          $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
+          $dllPaths = @(
+            (Join-Path $PWD "build-patch/LenovoLegionToolkit.Lib.dll"),
+            (Join-Path $PWD "build-patch/Lenovo Legion Toolkit.dll")
+          )
 
-          if ($assemblyName.Version -ne [Version]"2.36.1.18") {
-            throw "Unexpected assembly version: $($assemblyName.Version)"
+          foreach ($dllPath in $dllPaths) {
+            $assemblyName = [Reflection.AssemblyName]::GetAssemblyName($dllPath)
+            $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
+
+            if ($assemblyName.Version -ne [Version]"2.36.1.18") {
+              throw "Unexpected assembly version for $dllPath: $($assemblyName.Version)"
+            }
+
+            if ($fileVersion -ne "2.36.1.18") {
+              throw "Unexpected file version for $dllPath: $fileVersion"
+            }
+
+            Write-Host "Verified $($assemblyName.Name), Version=$($assemblyName.Version), FileVersion=$fileVersion"
           }
 
-          if ($fileVersion -ne "2.36.1.18") {
-            throw "Unexpected file version: $fileVersion"
-          }
-
-          Write-Host "Verified $($assemblyName.Name), Version=$($assemblyName.Version), FileVersion=$fileVersion"
-
-      - name: Upload DLL
+      - name: Upload patch DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: LenovoLegionToolkit.Lib-2.36.1.18-ITS-startup-toggle
-          path: build-lib/LenovoLegionToolkit.Lib.dll
+          name: LenovoLegionToolkit-2.36.1.18-ITS-startup-toggle-full
+          path: |
+            build-patch/LenovoLegionToolkit.Lib.dll
+            build-patch/Lenovo Legion Toolkit.dll
           if-no-files-found: error
