@@ -1,0 +1,35 @@
+name: Build LLT Library
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - its-startup-restore-toggle-build
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore
+        run: dotnet restore LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj
+
+      - name: Publish library
+        run: dotnet publish LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj -c Release -o build-lib /p:DebugType=None
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: LenovoLegionToolkit.Lib
+          path: build-lib/LenovoLegionToolkit.Lib.dll
+          if-no-files-found: error
