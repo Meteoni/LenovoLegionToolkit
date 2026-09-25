@@ -252,12 +252,6 @@ public partial class ITSModeFeature : IFeature<ITSMode>
             {
                 Log.Instance.Trace($"ITS mode startup restore is disabled. Keeping current mode: {currentState}");
                 LastItsMode = currentState;
-
-                if (currentState != ITSMode.None && savedState != currentState)
-                {
-                    SaveCurrentStateToSettings(currentState);
-                }
-
                 return true;
             }
 
