@@ -24,10 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Preserve patch definition
+      - name: Preserve patch definitions
         shell: powershell
         run: |
           Copy-Item ".github/patches/its-startup-toggle.patch" "$env:RUNNER_TEMP\its-startup-toggle.patch"
+          Copy-Item ".github/patches/drr-configurable-range.patch" "$env:RUNNER_TEMP\drr-configurable-range.patch"
 
       - name: Check out current upstream dev
         id: upstream
@@ -61,6 +62,23 @@ jobs:
           }
 
           Write-Host "Applied ITS startup-toggle patch:"
+          git diff --stat
+
+      - name: Apply configurable DRR range patch
+        shell: powershell
+        run: |
+          $patch = "$env:RUNNER_TEMP\drr-configurable-range.patch"
+          git apply --check $patch
+          if ($LASTEXITCODE -ne 0) {
+            throw "The configurable DRR range patch no longer applies cleanly to upstream dev. Refresh the patch before building."
+          }
+
+          git apply $patch
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to apply the configurable DRR range patch."
+          }
+
+          Write-Host "Applied configurable DRR range patch:"
           git diff --stat
 
       - name: Resolve upstream dev version
@@ -222,5 +240,7 @@ jobs:
           "- Upstream dev: ${{ steps.upstream.outputs.sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
           "- Version: ${{ steps.version.outputs.version }}" | Add-Content $env:GITHUB_STEP_SUMMARY
           "- Artifact: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-${{ steps.upstream.outputs.short_sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "- Patches: ITS startup restore toggle + configurable DRR low/high range" | Add-Content $env:GITHUB_STEP_SUMMARY
           "" | Add-Content $env:GITHUB_STEP_SUMMARY
           "The artifact contains the two replacement DLLs plus SHA256SUMS.txt." | Add-Content $env:GITHUB_STEP_SUMMARY
