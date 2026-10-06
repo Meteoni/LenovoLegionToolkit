@@ -19,6 +19,41 @@
                     Click="SynchronizeBrightnessToAllPowerPlansToggle_Click"
                     Visibility="Hidden" />
             </custom:CardControl>
+            <custom:CardControl
+                x:Name="_dynamicRefreshRateCard"
+                Margin="0,0,0,8"
+                Icon="DesktopPulse24"
+                Visibility="Collapsed">
+                <custom:CardControl.Header>
+                    <controls:CardHeaderControl
+                        Title="Dynamic refresh rate range"
+                        Subtitle="Choose the low and high refresh rates used by the Dynamic refresh rate option." />
+                </custom:CardControl.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="Low" />
+                    <ComboBox
+                        x:Name="_dynamicRefreshRateLowComboBox"
+                        MinWidth="90"
+                        Margin="0,0,12,8"
+                        SelectionChanged="DynamicRefreshRateLowComboBox_SelectionChanged"
+                        Visibility="Hidden" />
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="High" />
+                    <ComboBox
+                        x:Name="_dynamicRefreshRateHighComboBox"
+                        MinWidth="90"
+                        Margin="0,0,0,8"
+                        SelectionChanged="DynamicRefreshRateHighComboBox_SelectionChanged"
+                        Visibility="Hidden" />
+                </StackPanel>
+            </custom:CardControl>
             <custom:CardAction
                 x:Name="_bootLogoCard"
                 Margin="0,0,0,8"
