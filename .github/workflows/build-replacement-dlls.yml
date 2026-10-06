@@ -33,7 +33,9 @@ jobs:
         id: upstream
         shell: powershell
         run: |
-          git remote remove upstream 2>$null
+          if ((git remote) -contains "upstream") {
+            git remote remove upstream
+          }
           git remote add upstream https://github.com/LenovoLegionToolkit-Team/LenovoLegionToolkit.git
           git fetch upstream dev --tags --force
           git checkout --detach upstream/dev
