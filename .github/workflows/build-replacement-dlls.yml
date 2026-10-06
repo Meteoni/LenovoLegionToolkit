@@ -1,0 +1,223 @@
+name: Build LLT replacement DLLs
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llt-replacement-dlls-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout fork dev
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Preserve patch definition
+        shell: powershell
+        run: |
+          Copy-Item ".github/patches/its-startup-toggle.patch" "$env:RUNNER_TEMP\its-startup-toggle.patch"
+
+      - name: Check out current upstream dev
+        id: upstream
+        shell: powershell
+        run: |
+          git remote remove upstream 2>$null
+          git remote add upstream https://github.com/LenovoLegionToolkit-Team/LenovoLegionToolkit.git
+          git fetch upstream dev --tags --force
+          git checkout --detach upstream/dev
+
+          $sha = (git rev-parse HEAD).Trim()
+          $shortSha = (git rev-parse --short=8 HEAD).Trim()
+          Write-Host "Building from upstream dev $sha"
+          "sha=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "short_sha=$shortSha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Apply ITS startup toggle patch
+        shell: powershell
+        run: |
+          $patch = "$env:RUNNER_TEMP\its-startup-toggle.patch"
+          git apply --check $patch
+          if ($LASTEXITCODE -ne 0) {
+            throw "The ITS startup-toggle patch no longer applies cleanly to upstream dev. Refresh the patch before building."
+          }
+
+          git apply $patch
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to apply the ITS startup-toggle patch."
+          }
+
+          Write-Host "Applied ITS startup-toggle patch:"
+          git diff --stat
+
+      - name: Resolve upstream dev version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: powershell
+        run: |
+          $pointingTags = git tag --points-at HEAD | Where-Object { $_ -match '^v\d+\.\d+\.\d+\.\d+$' }
+
+          $version = $null
+          if ($pointingTags) {
+            $version = $pointingTags |
+              ForEach-Object {
+                [PSCustomObject]@{
+                  Tag = $_
+                  Version = [Version]$_.TrimStart('v', 'V')
+                }
+              } |
+              Sort-Object Version -Descending |
+              Select-Object -First 1 -ExpandProperty Version
+
+            $version = $version.ToString()
+            Write-Host "Using upstream tag version: $version"
+          }
+
+          if (-not $version) {
+            Write-Host "No four-part version tag points at upstream dev HEAD. Reproducing upstream dev odometer."
+
+            $releases = gh release list --repo LenovoLegionToolkit-Team/LenovoLegionToolkit --exclude-drafts --limit 30 --json tagName,name,isPrerelease,isLatest | ConvertFrom-Json
+
+            $latestStable = $releases |
+              Where-Object {
+                -not $_.isPrerelease -and
+                $_.name -notlike '*(Dev)*' -and
+                $_.name -notlike '*(Beta)*'
+              } |
+              Select-Object -First 1
+
+            if (-not $latestStable) {
+              throw "Couldn't determine the latest upstream stable release."
+            }
+
+            $cleanTag = $latestStable.tagName.TrimStart('v', 'V')
+            $stableVersion = [Version]$cleanTag
+
+            $baseMajor = $stableVersion.Major
+            $baseMinor = $stableVersion.Minor
+            $basePatch = if ($stableVersion.Build -ge 0) { $stableVersion.Build } else { 0 }
+            $baseBuild = if ($stableVersion.Revision -ge 0) { $stableVersion.Revision } else { 0 }
+
+            $tagRef = if (git tag -l "v$cleanTag") {
+              "v$cleanTag"
+            } elseif (git tag -l "$cleanTag") {
+              "$cleanTag"
+            } else {
+              git fetch upstream "refs/tags/v$cleanTag:refs/tags/v$cleanTag" --force
+              "v$cleanTag"
+            }
+
+            $commitCountText = (git rev-list --count "$tagRef..HEAD").Trim()
+            if ($commitCountText -notmatch '^\d+$') {
+              throw "Couldn't count upstream dev commits since $tagRef."
+            }
+
+            $runNumber = [int]$commitCountText
+            $buildCap = 20
+            $patchCap = 10
+            $minorCap = 100
+
+            $totalBuild = $baseBuild + $runNumber
+            $build = $totalBuild % $buildCap
+            $carriedPatches = [Math]::Floor($totalBuild / $buildCap)
+
+            $totalPatch = $basePatch + $carriedPatches
+            $patchPart = $totalPatch % $patchCap
+            $carriedMinors = [Math]::Floor($totalPatch / $patchCap)
+
+            $totalMinor = $baseMinor + $carriedMinors
+            $minor = $totalMinor % $minorCap
+            $carriedMajors = [Math]::Floor($totalMinor / $minorCap)
+
+            $major = $baseMajor + $carriedMajors
+            $version = "$major.$minor.$patchPart.$build"
+            Write-Host "Resolved upstream-style dev version: $version"
+          }
+
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore application
+        run: dotnet restore LenovoLegionToolkit.WPF/LenovoLegionToolkit.WPF.csproj
+
+      - name: Build replacement DLLs
+        shell: powershell
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          dotnet publish LenovoLegionToolkit.WPF/LenovoLegionToolkit.WPF.csproj -c Release -o build-patch /p:DebugType=None /p:DebugSymbols=false /p:Version=$version /p:FileVersion=$version
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "dotnet publish failed."
+          }
+
+      - name: Verify and checksum DLLs
+        shell: powershell
+        run: |
+          $expectedVersion = [Version]"${{ steps.version.outputs.version }}"
+          $dllPaths = @(
+            (Join-Path $PWD "build-patch\LenovoLegionToolkit.Lib.dll"),
+            (Join-Path $PWD "build-patch\Lenovo Legion Toolkit.dll")
+          )
+
+          $checksums = @()
+          foreach ($dllPath in $dllPaths) {
+            if (-not (Test-Path $dllPath)) {
+              throw "Expected DLL not found: $dllPath"
+            }
+
+            $assemblyName = [Reflection.AssemblyName]::GetAssemblyName($dllPath)
+            $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
+
+            if ($assemblyName.Version -ne $expectedVersion) {
+              throw "Unexpected assembly version for $dllPath : $($assemblyName.Version), expected $expectedVersion"
+            }
+
+            if ($fileVersion -ne $expectedVersion.ToString()) {
+              throw "Unexpected file version for $dllPath : $fileVersion, expected $expectedVersion"
+            }
+
+            $hash = Get-FileHash $dllPath -Algorithm SHA256
+            $checksums += "$($hash.Hash)  $([IO.Path]::GetFileName($dllPath))"
+            Write-Host "Verified $($assemblyName.Name), Version=$($assemblyName.Version), SHA256=$($hash.Hash)"
+          }
+
+          $checksums | Set-Content "build-patch\SHA256SUMS.txt"
+
+      - name: Upload replacement DLLs
+        uses: actions/upload-artifact@v4
+        with:
+          name: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-${{ steps.upstream.outputs.short_sha }}
+          path: |
+            build-patch/LenovoLegionToolkit.Lib.dll
+            build-patch/Lenovo Legion Toolkit.dll
+            build-patch/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Build summary
+        shell: powershell
+        run: |
+          "## LLT replacement DLLs built" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "- Upstream dev: ${{ steps.upstream.outputs.sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "- Version: ${{ steps.version.outputs.version }}" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "- Artifact: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-${{ steps.upstream.outputs.short_sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "The artifact contains the two replacement DLLs plus SHA256SUMS.txt." | Add-Content $env:GITHUB_STEP_SUMMARY
