@@ -6,7 +6,6 @@ public class ITSModeSettings() : AbstractSettings<ITSModeSettings.ITSModeSetting
 {
     public class ITSModeSettingsStore
     {
-        public ITSMode LastState { get; set; } = ITSMode.None;
         public List<ITSMode> FnQModeOrder { get; set; } = [];
         public List<ITSMode> DisabledModes { get; set; } = [];
     }
