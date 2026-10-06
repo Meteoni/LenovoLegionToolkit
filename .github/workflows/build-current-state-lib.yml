@@ -1,4 +1,4 @@
-name: Build current-state ITS library
+name: Build current-state ITS patch DLLs
 
 on:
   workflow_dispatch:
@@ -21,28 +21,45 @@ jobs:
           cache: true
           cache-dependency-path: '**/*.csproj'
 
-      - name: Restore
-        run: dotnet restore LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj
+      - name: Restore application
+        run: dotnet restore LenovoLegionToolkit.WPF/LenovoLegionToolkit.WPF.csproj
 
-      - name: Publish library
-        run: dotnet publish LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj -c Release -o build-lib /p:DebugType=None /p:DebugSymbols=false
+      - name: Publish matching application assemblies
+        run: dotnet publish LenovoLegionToolkit.WPF/LenovoLegionToolkit.WPF.csproj -c Release -o build-patch /p:DebugType=None /p:DebugSymbols=false
 
-      - name: Verify output
+      - name: Verify assembly identities
         shell: powershell
         run: |
-          $dll = "build-lib\LenovoLegionToolkit.Lib.dll"
-          if (-not (Test-Path $dll)) {
-            Write-Error "Expected DLL not found: $dll"
-            exit 1
+          $dllPaths = @(
+            (Join-Path $PWD "build-patch/LenovoLegionToolkit.Lib.dll"),
+            (Join-Path $PWD "build-patch/Lenovo Legion Toolkit.dll")
+          )
+
+          foreach ($dllPath in $dllPaths) {
+            if (-not (Test-Path $dllPath)) {
+              throw "Expected DLL not found: $dllPath"
+            }
+
+            $assemblyName = [Reflection.AssemblyName]::GetAssemblyName($dllPath)
+            $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
+
+            if ($assemblyName.Version -ne [Version]"2.34.0.0") {
+              throw "Unexpected assembly version for ${dllPath}: $($assemblyName.Version)"
+            }
+
+            if ($fileVersion -ne "2.34.0.0") {
+              throw "Unexpected file version for ${dllPath}: $fileVersion"
+            }
+
+            Write-Host "Verified $($assemblyName.Name), Version=$($assemblyName.Version), FileVersion=$fileVersion"
+            Get-FileHash $dllPath -Algorithm SHA256 | Format-List
           }
 
-          $assembly = [System.Reflection.AssemblyName]::GetAssemblyName((Resolve-Path $dll))
-          Write-Host "Assembly: $($assembly.FullName)"
-          Get-FileHash $dll -Algorithm SHA256 | Format-List
-
-      - name: Upload DLL
+      - name: Upload patch DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: LenovoLegionToolkit.Lib-current-state-upstream-da6be8ec
-          path: build-lib/LenovoLegionToolkit.Lib.dll
+          name: LenovoLegionToolkit-current-state-upstream-da6be8ec
+          path: |
+            build-patch/LenovoLegionToolkit.Lib.dll
+            build-patch/Lenovo Legion Toolkit.dll
           if-no-files-found: error
