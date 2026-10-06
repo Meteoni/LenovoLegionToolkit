@@ -1,0 +1,146 @@
+diff --git a/LenovoLegionToolkit.Lib/Features/ITSModeFeature.cs b/LenovoLegionToolkit.Lib/Features/ITSModeFeature.cs
+--- a/LenovoLegionToolkit.Lib/Features/ITSModeFeature.cs
++++ b/LenovoLegionToolkit.Lib/Features/ITSModeFeature.cs
+@@ -248,6 +248,13 @@ public async Task<bool> RestoreStateAsync()
+             var currentState = await GetStateAsync().ConfigureAwait(false);
+             var savedState = _settings.Store.LastState;
+ 
++            if (!_settings.Store.RestoreStateOnStartup)
++            {
++                Log.Instance.Trace($"ITS mode startup restore is disabled. Keeping current mode: {currentState}");
++                LastItsMode = currentState;
++                return true;
++            }
++
+             if (savedState != ITSMode.None && savedState != currentState)
+             {
+                 Log.Instance.Trace($"Restoring saved ITS mode: {savedState}");
+diff --git a/LenovoLegionToolkit.Lib/Settings/ITSModeSettings.cs b/LenovoLegionToolkit.Lib/Settings/ITSModeSettings.cs
+--- a/LenovoLegionToolkit.Lib/Settings/ITSModeSettings.cs
++++ b/LenovoLegionToolkit.Lib/Settings/ITSModeSettings.cs
+@@ -7,6 +7,7 @@ public class ITSModeSettings() : AbstractSettings<ITSModeSettings.ITSModeSetting
+     public class ITSModeSettingsStore
+     {
+         public ITSMode LastState { get; set; } = ITSMode.None;
++        public bool RestoreStateOnStartup { get; set; } = true;
+         public List<ITSMode> FnQModeOrder { get; set; } = [];
+         public List<ITSMode> DisabledModes { get; set; } = [];
+     }
+diff --git a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml
+--- a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml
++++ b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml
+@@ -23,6 +23,21 @@
+                     Click="GodModeFnQSwitchableToggle_Click"
+                     Visibility="Hidden" />
+             </custom:CardControl>
++            <custom:CardControl
++                x:Name="_restoreITSModeOnStartupCard"
++                Margin="0,0,0,8"
++                Icon="ArrowSync24"
++                Visibility="Collapsed">
++                <custom:CardControl.Header>
++                    <controls:CardHeaderControl Title="{x:Static resources:Resource.SettingsPage_RestoreITSModeOnStartup_Title}" Subtitle="{x:Static resources:Resource.SettingsPage_RestoreITSModeOnStartup_Message}" />
++                </custom:CardControl.Header>
++                <wpfui:ToggleSwitch
++                    x:Name="_restoreITSModeOnStartupToggle"
++                    Margin="0,0,0,8"
++                    AutomationProperties.Name="{x:Static resources:Resource.SettingsPage_RestoreITSModeOnStartup_Title}"
++                    Click="RestoreITSModeOnStartupToggle_Click"
++                    Visibility="Hidden" />
++            </custom:CardControl>
+             <custom:CardControl
+                 x:Name="_powerModeMappingCard"
+                 Margin="0,0,0,8"
+diff --git a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml.cs b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml.cs
+--- a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml.cs
++++ b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml.cs
+@@ -20,6 +20,7 @@ namespace LenovoLegionToolkit.WPF.Controls.Settings;
+ public partial class SettingsPowerControl
+ {
+     private readonly ApplicationSettings _settings = IoCContainer.Resolve<ApplicationSettings>();
++    private readonly ITSModeSettings _itsModeSettings = IoCContainer.Resolve<ITSModeSettings>();
+     private readonly PowerModeFeature _powerModeFeature = IoCContainer.Resolve<PowerModeFeature>();
+     private readonly ITSModeFeature _itsModeFeature = IoCContainer.Resolve<ITSModeFeature>();
+ 
+@@ -60,6 +61,9 @@ public async Task RefreshAsync()
+         var isWindowsPowerModeSupported = WindowsPowerModeController.IsOverlaySupported;
+         var powerModeMappingMode = _settings.Store.PowerModeMappingMode;
+ 
++        _restoreITSModeOnStartupCard.Visibility = isITSModeFeatureSupported ? Visibility.Visible : Visibility.Collapsed;
++        _restoreITSModeOnStartupToggle.IsChecked = _itsModeSettings.Store.RestoreStateOnStartup;
++
+         if (!isWindowsPowerModeSupported && powerModeMappingMode == PowerModeMappingMode.WindowsPowerMode)
+         {
+             powerModeMappingMode = PowerModeMappingMode.Disabled;
+@@ -78,6 +82,7 @@ public async Task RefreshAsync()
+         _onBatterySinceResetToggle.Visibility = Visibility.Visible;
+ 
+         _godModeFnQSwitchableToggle.Visibility = Visibility.Visible;
++        _restoreITSModeOnStartupToggle.Visibility = Visibility.Visible;
+         _powerModeMappingComboBox.Visibility = Visibility.Visible;
+ 
+         _isRefreshing = false;
+@@ -185,6 +190,19 @@ private void WindowsPowerPlansControlPanel_Click(object sender, RoutedEventArgs
+         Process.Start("control", "/name Microsoft.PowerOptions");
+     }
+ 
++    private void RestoreITSModeOnStartupToggle_Click(object sender, RoutedEventArgs e)
++    {
++        if (_isRefreshing)
++            return;
++
++        var state = _restoreITSModeOnStartupToggle.IsChecked;
++        if (state is null)
++            return;
++
++        _itsModeSettings.Store.RestoreStateOnStartup = state.Value;
++        _itsModeSettings.SynchronizeStore();
++    }
++
+     private void OnBatterySinceResetToggle_Click(object sender, RoutedEventArgs e)
+     {
+         if (_isRefreshing)
+diff --git a/LenovoLegionToolkit.WPF/Resources/Resource.Designer.cs b/LenovoLegionToolkit.WPF/Resources/Resource.Designer.cs
+--- a/LenovoLegionToolkit.WPF/Resources/Resource.Designer.cs
++++ b/LenovoLegionToolkit.WPF/Resources/Resource.Designer.cs
+@@ -9669,6 +9669,24 @@ public static string SettingsPage_PowerModeMapping_Title {
+             }
+         }
+         
++        /// <summary>
++        ///   Looks up a localized string similar to Reapply the last used ITS mode when the app starts..
++        /// </summary>
++        public static string SettingsPage_RestoreITSModeOnStartup_Message {
++            get {
++                return ResourceManager.GetString("SettingsPage_RestoreITSModeOnStartup_Message", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Restore ITS mode on startup.
++        /// </summary>
++        public static string SettingsPage_RestoreITSModeOnStartup_Title {
++            get {
++                return ResourceManager.GetString("SettingsPage_RestoreITSModeOnStartup_Title", resourceCulture);
++            }
++        }
++        
+         /// <summary>
+         ///   Looks up a localized string similar to Restore previous window position on application launch..
+         /// </summary>
+diff --git a/LenovoLegionToolkit.WPF/Resources/Resource.resx b/LenovoLegionToolkit.WPF/Resources/Resource.resx
+--- a/LenovoLegionToolkit.WPF/Resources/Resource.resx
++++ b/LenovoLegionToolkit.WPF/Resources/Resource.resx
+@@ -3337,6 +3337,12 @@ If disabled, this app will handle Fn shortcuts.</value>
+   <data name="SettingsPage_PowerModeMapping_Title" xml:space="preserve">
+     <value>Power Mode Synchronization</value>
+   </data>
++  <data name="SettingsPage_RestoreITSModeOnStartup_Message" xml:space="preserve">
++    <value>Reapply the last used ITS mode when the app starts.</value>
++  </data>
++  <data name="SettingsPage_RestoreITSModeOnStartup_Title" xml:space="preserve">
++    <value>Restore ITS mode on startup</value>
++  </data>
+   <data name="SettingsPage_RememberWindowPosition_Message" xml:space="preserve">
+     <value>Restore previous window position on application launch.</value>
+   </data>
