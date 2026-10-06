@@ -1,4 +1,5 @@
 name: Build LLT replacement DLLs
+# Builds the two patched assemblies whenever the fork's dev branch changes.
 
 on:
   push:
