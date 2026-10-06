@@ -1,0 +1,243 @@
+diff --git a/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs b/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs
+--- a/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs
++++ b/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs
+@@ -3,6 +3,7 @@
+ using System.Linq;
+ using System.Threading.Tasks;
+ using LenovoLegionToolkit.Lib.Extensions;
++using LenovoLegionToolkit.Lib.Settings;
+ using LenovoLegionToolkit.Lib.System;
+ using LenovoLegionToolkit.Lib.Utils;
+ using WindowsDisplayAPI;
+@@ -13,6 +14,13 @@ namespace LenovoLegionToolkit.Lib.Features;
+ 
+ public class RefreshRateFeature : IFeature<RefreshRate>
+ {
++    private readonly ApplicationSettings _settings;
++
++    public RefreshRateFeature(ApplicationSettings settings)
++    {
++        _settings = settings;
++    }
++
+     public Task<bool> IsSupportedAsync() => Task.FromResult(true);
+ 
+     public async Task<RefreshRate[]> GetAllStatesAsync()
+@@ -54,10 +62,30 @@ public async Task<RefreshRate[]> GetAllStatesAsync()
+ 
+                 if (targetInfo is not null && (targetInfo.IsBoostRefreshRate || targetInfo.IsDynamicRefreshRateSupported))
+                 {
+-                    var lowFreq = targetInfo.DisplayTarget.GetDynamicLowFrequency(result.Select(r => r.Frequency));
+-                    if (lowFreq > 0 && lowFreq < maxFreq)
++                    var availableFrequencies = result.Select(r => r.Frequency).ToArray();
++                    var detectedLowFreq = targetInfo.DisplayTarget.GetDynamicLowFrequency(availableFrequencies);
++
++                    var configuredHighFreq = _settings.Store.DynamicRefreshRateHighFrequency;
++                    var highFreq = configuredHighFreq > 0 && availableFrequencies.Contains(configuredHighFreq)
++                        ? configuredHighFreq
++                        : maxFreq;
++
++                    var configuredLowFreq = _settings.Store.DynamicRefreshRateLowFrequency;
++                    var lowFreq = configuredLowFreq > 0 && availableFrequencies.Contains(configuredLowFreq)
++                        ? configuredLowFreq
++                        : detectedLowFreq;
++
++                    if (lowFreq <= 0 || lowFreq >= highFreq)
++                    {
++                        lowFreq = detectedLowFreq > 0 && detectedLowFreq < highFreq
++                            ? detectedLowFreq
++                            : availableFrequencies.Where(f => f < highFreq).DefaultIfEmpty(0).Max();
++                    }
++
++                    if (lowFreq > 0 && lowFreq < highFreq)
+                     {
+-                        result.Add(new RefreshRate(maxFreq, isDynamic: true, baseFrequency: lowFreq));
++                        Log.Instance.Trace($"Dynamic refresh rate range: {lowFreq}Hz to {highFreq}Hz");
++                        result.Add(new RefreshRate(highFreq, isDynamic: true, baseFrequency: lowFreq));
+                     }
+                 }
+             }
+
+diff --git a/LenovoLegionToolkit.Lib/Settings/ApplicationSettings.cs b/LenovoLegionToolkit.Lib/Settings/ApplicationSettings.cs
+--- a/LenovoLegionToolkit.Lib/Settings/ApplicationSettings.cs
++++ b/LenovoLegionToolkit.Lib/Settings/ApplicationSettings.cs
+@@ -26,6 +26,8 @@ public class ApplicationSettingsStore
+         public WindowSize? WindowSize { get; set; }
+         public TemperatureUnit TemperatureUnit { get; set; }
+         public List<RefreshRate> ExcludedRefreshRates { get; set; } = [];
++        public int DynamicRefreshRateLowFrequency { get; set; }
++        public int DynamicRefreshRateHighFrequency { get; set; }
+         public WarrantyInfo? WarrantyInfo { get; set; }
+         public bool SynchronizeBrightnessToAllPowerPlans { get; set; }
+         public ModifierKey SmartFnLockFlags { get; set; }
+
+diff --git a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml
+--- a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml
++++ b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml
+@@ -19,6 +19,41 @@
+                     Click="SynchronizeBrightnessToAllPowerPlansToggle_Click"
+                     Visibility="Hidden" />
+             </custom:CardControl>
++            <custom:CardControl
++                x:Name="_dynamicRefreshRateCard"
++                Margin="0,0,0,8"
++                Icon="DesktopPulse24"
++                Visibility="Collapsed">
++                <custom:CardControl.Header>
++                    <controls:CardHeaderControl
++                        Title="Dynamic refresh rate range"
++                        Subtitle="Choose the low and high refresh rates used by the Dynamic refresh rate option." />
++                </custom:CardControl.Header>
++                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
++                    <TextBlock
++                        Margin="0,0,6,0"
++                        VerticalAlignment="Center"
++                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
++                        Text="Low" />
++                    <ComboBox
++                        x:Name="_dynamicRefreshRateLowComboBox"
++                        MinWidth="90"
++                        Margin="0,0,12,8"
++                        SelectionChanged="DynamicRefreshRateLowComboBox_SelectionChanged"
++                        Visibility="Hidden" />
++                    <TextBlock
++                        Margin="0,0,6,0"
++                        VerticalAlignment="Center"
++                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
++                        Text="High" />
++                    <ComboBox
++                        x:Name="_dynamicRefreshRateHighComboBox"
++                        MinWidth="90"
++                        Margin="0,0,0,8"
++                        SelectionChanged="DynamicRefreshRateHighComboBox_SelectionChanged"
++                        Visibility="Hidden" />
++                </StackPanel>
++            </custom:CardControl>
+             <custom:CardAction
+                 x:Name="_bootLogoCard"
+                 Margin="0,0,0,8"
+
+diff --git a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml.cs b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml.cs
+--- a/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml.cs
++++ b/LenovoLegionToolkit.WPF/Controls/Settings/SettingsDisplayControl.xaml.cs
+@@ -1,16 +1,21 @@
++using System.Linq;
+ using System.Threading.Tasks;
+ using System.Windows;
++using System.Windows.Controls;
+ using LenovoLegionToolkit.Lib;
++using LenovoLegionToolkit.Lib.Features;
+ using LenovoLegionToolkit.Lib.Settings;
+ using LenovoLegionToolkit.Lib.System;
+ using LenovoLegionToolkit.Lib.Utils;
++using LenovoLegionToolkit.WPF.Extensions;
+ using LenovoLegionToolkit.WPF.Windows.Settings;
+ 
+ namespace LenovoLegionToolkit.WPF.Controls.Settings;
+ 
+ public partial class SettingsDisplayControl
+ {
+     private readonly ApplicationSettings _settings = IoCContainer.Resolve<ApplicationSettings>();
++    private readonly RefreshRateFeature _refreshRateFeature = IoCContainer.Resolve<RefreshRateFeature>();
+ 
+     private bool _isRefreshing;
+ 
+@@ -26,6 +31,38 @@ public async Task RefreshAsync()
+         _synchronizeBrightnessToAllPowerPlansToggle.IsChecked = _settings.Store.SynchronizeBrightnessToAllPowerPlans;
+         _bootLogoCard.Visibility = await BootLogo.IsSupportedAsync() ? Visibility.Visible : Visibility.Collapsed;
+ 
++        var refreshRates = await _refreshRateFeature.GetAllStatesAsync();
++        var fixedFrequencies = refreshRates
++            .Where(r => !r.IsDynamic)
++            .Select(r => r.Frequency)
++            .Distinct()
++            .OrderBy(f => f)
++            .ToArray();
++        var dynamicRefreshRate = refreshRates.FirstOrDefault(r => r.IsDynamic);
++
++        if (dynamicRefreshRate.IsDynamic && fixedFrequencies.Length >= 2)
++        {
++            var lowFrequency = dynamicRefreshRate.BaseFrequency;
++            var highFrequency = dynamicRefreshRate.Frequency;
++
++            _dynamicRefreshRateLowComboBox.SetItems(
++                fixedFrequencies.Where(f => f < highFrequency).ToArray(),
++                lowFrequency,
++                f => $"{f} Hz");
++            _dynamicRefreshRateHighComboBox.SetItems(
++                fixedFrequencies.Where(f => f > lowFrequency).ToArray(),
++                highFrequency,
++                f => $"{f} Hz");
++
++            _dynamicRefreshRateCard.Visibility = Visibility.Visible;
++            _dynamicRefreshRateLowComboBox.Visibility = Visibility.Visible;
++            _dynamicRefreshRateHighComboBox.Visibility = Visibility.Visible;
++        }
++        else
++        {
++            _dynamicRefreshRateCard.Visibility = Visibility.Collapsed;
++        }
++
+         _synchronizeBrightnessToAllPowerPlansToggle.Visibility = Visibility.Visible;
+ 
+         _isRefreshing = false;
+@@ -44,6 +81,59 @@ private void SynchronizeBrightnessToAllPowerPlansToggle_Click(object sender, Rou
+         _settings.SynchronizeStore();
+     }
+ 
++    private async void DynamicRefreshRateLowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
++    {
++        if (_isRefreshing)
++            return;
++
++        if (!_dynamicRefreshRateLowComboBox.TryGetSelectedItem(out int lowFrequency) ||
++            !_dynamicRefreshRateHighComboBox.TryGetSelectedItem(out int highFrequency))
++            return;
++
++        await SaveDynamicRefreshRateRangeAsync(lowFrequency, highFrequency);
++    }
++
++    private async void DynamicRefreshRateHighComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
++    {
++        if (_isRefreshing)
++            return;
++
++        if (!_dynamicRefreshRateLowComboBox.TryGetSelectedItem(out int lowFrequency) ||
++            !_dynamicRefreshRateHighComboBox.TryGetSelectedItem(out int highFrequency))
++            return;
++
++        await SaveDynamicRefreshRateRangeAsync(lowFrequency, highFrequency);
++    }
++
++    private async Task SaveDynamicRefreshRateRangeAsync(int lowFrequency, int highFrequency)
++    {
++        if (lowFrequency <= 0 || highFrequency <= lowFrequency)
++            return;
++
++        _isRefreshing = true;
++        try
++        {
++            _settings.Store.DynamicRefreshRateLowFrequency = lowFrequency;
++            _settings.Store.DynamicRefreshRateHighFrequency = highFrequency;
++            _settings.SynchronizeStore();
++
++            var currentState = await _refreshRateFeature.GetStateAsync();
++            if (currentState.IsDynamic)
++            {
++                await _refreshRateFeature.SetStateAsync(new RefreshRate(
++                    highFrequency,
++                    isDynamic: true,
++                    baseFrequency: lowFrequency));
++            }
++        }
++        finally
++        {
++            _isRefreshing = false;
++        }
++
++        await RefreshAsync();
++    }
++
+     private void BootLogo_Click(object sender, RoutedEventArgs e)
+     {
+         if (_isRefreshing)
