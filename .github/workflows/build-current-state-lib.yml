@@ -1,0 +1,48 @@
+name: Build current-state ITS library
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - its-current-state-upstream-2026-10-06
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore
+        run: dotnet restore LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj
+
+      - name: Publish library
+        run: dotnet publish LenovoLegionToolkit.Lib/LenovoLegionToolkit.Lib.csproj -c Release -o build-lib /p:DebugType=None /p:DebugSymbols=false
+
+      - name: Verify output
+        shell: powershell
+        run: |
+          $dll = "build-lib\LenovoLegionToolkit.Lib.dll"
+          if (-not (Test-Path $dll)) {
+            Write-Error "Expected DLL not found: $dll"
+            exit 1
+          }
+
+          $assembly = [System.Reflection.AssemblyName]::GetAssemblyName((Resolve-Path $dll))
+          Write-Host "Assembly: $($assembly.FullName)"
+          Get-FileHash $dll -Algorithm SHA256 | Format-List
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: LenovoLegionToolkit.Lib-current-state-upstream-da6be8ec
+          path: build-lib/LenovoLegionToolkit.Lib.dll
+          if-no-files-found: error
