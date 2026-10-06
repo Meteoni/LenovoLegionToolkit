@@ -104,12 +104,6 @@ public partial class ITSModeFeature : IFeature<ITSMode>
         await ApplyPowerChanges().ConfigureAwait(false);
     }
 
-    private void SaveCurrentStateToSettings(ITSMode state)
-    {
-        _settings.Store.LastState = state;
-        _settings.SynchronizeStore();
-    }
-
     public async Task<bool> IsSupportedAsync()
     {
         if (await UseExperimentalDriverAsync().ConfigureAwait(false))
@@ -182,7 +176,6 @@ public partial class ITSModeFeature : IFeature<ITSMode>
                 ITSModeListener.PublishNotification(state);
             }
 
-            SaveCurrentStateToSettings(state);
             return;
         }
 
@@ -224,7 +217,6 @@ public partial class ITSModeFeature : IFeature<ITSMode>
                 ITSModeListener.PublishNotification(state);
             }
 
-            SaveCurrentStateToSettings(state);
         }
         catch (Exception ex)
         {
@@ -246,23 +238,15 @@ public partial class ITSModeFeature : IFeature<ITSMode>
             _powerListener.Enable();
 
             var currentState = await GetStateAsync().ConfigureAwait(false);
-            var savedState = _settings.Store.LastState;
-
-            if (savedState != ITSMode.None && savedState != currentState)
+            if (currentState == ITSMode.None)
             {
-                Log.Instance.Trace($"Restoring saved ITS mode: {savedState}");
-                await SetStateAsync(savedState).ConfigureAwait(false);
+                Log.Instance.Trace($"Couldn't determine the current ITS mode.");
+                return false;
             }
-            else
-            {
-                await SetStateAsync(currentState).ConfigureAwait(false);
 
-                if (savedState != currentState)
-                {
-                    _settings.Store.LastState = currentState;
-                    _settings.SynchronizeStore();
-                }
-            }
+            LastItsMode = currentState;
+            Log.Instance.Trace($"Using current ITS mode as startup state: {currentState}");
+            await ApplyPowerChanges().ConfigureAwait(false);
 
             return true;
         }
