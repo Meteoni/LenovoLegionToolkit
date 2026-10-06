@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LenovoLegionToolkit.Lib.Extensions;
+using LenovoLegionToolkit.Lib.Settings;
 using LenovoLegionToolkit.Lib.System;
 using LenovoLegionToolkit.Lib.Utils;
 using WindowsDisplayAPI;
@@ -13,6 +14,13 @@ namespace LenovoLegionToolkit.Lib.Features;
 
 public class RefreshRateFeature : IFeature<RefreshRate>
 {
+    private readonly ApplicationSettings _settings;
+
+    public RefreshRateFeature(ApplicationSettings settings)
+    {
+        _settings = settings;
+    }
+
     public Task<bool> IsSupportedAsync() => Task.FromResult(true);
 
     public async Task<RefreshRate[]> GetAllStatesAsync()
@@ -54,10 +62,30 @@ public class RefreshRateFeature : IFeature<RefreshRate>
 
                 if (targetInfo is not null && (targetInfo.IsBoostRefreshRate || targetInfo.IsDynamicRefreshRateSupported))
                 {
-                    var lowFreq = targetInfo.DisplayTarget.GetDynamicLowFrequency(result.Select(r => r.Frequency));
-                    if (lowFreq > 0 && lowFreq < maxFreq)
+                    var availableFrequencies = result.Select(r => r.Frequency).ToArray();
+                    var detectedLowFreq = targetInfo.DisplayTarget.GetDynamicLowFrequency(availableFrequencies);
+
+                    var configuredHighFreq = _settings.Store.DynamicRefreshRateHighFrequency;
+                    var highFreq = configuredHighFreq > 0 && availableFrequencies.Contains(configuredHighFreq)
+                        ? configuredHighFreq
+                        : maxFreq;
+
+                    var configuredLowFreq = _settings.Store.DynamicRefreshRateLowFrequency;
+                    var lowFreq = configuredLowFreq > 0 && availableFrequencies.Contains(configuredLowFreq)
+                        ? configuredLowFreq
+                        : detectedLowFreq;
+
+                    if (lowFreq <= 0 || lowFreq >= highFreq)
                     {
-                        result.Add(new RefreshRate(maxFreq, isDynamic: true, baseFrequency: lowFreq));
+                        lowFreq = detectedLowFreq > 0 && detectedLowFreq < highFreq
+                            ? detectedLowFreq
+                            : availableFrequencies.Where(f => f < highFreq).DefaultIfEmpty(0).Max();
+                    }
+
+                    if (lowFreq > 0 && lowFreq < highFreq)
+                    {
+                        Log.Instance.Trace($"Dynamic refresh rate range: {lowFreq}Hz to {highFreq}Hz");
+                        result.Add(new RefreshRate(highFreq, isDynamic: true, baseFrequency: lowFreq));
                     }
                 }
             }
