@@ -63,6 +63,77 @@ jobs:
           Write-Host "Applied ITS startup-toggle patch:"
           git diff --stat
 
+      - name: Apply one-time 100 Hz DRR patch
+        if: github.event.head_commit.message == 'Build one-time 50-100 Hz DRR replacement DLLs (2026-10-07)'
+        shell: powershell
+        run: |
+          $patchContent = @'
+          diff --git a/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs b/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs
+          --- a/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs
+          +++ b/LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs
+          @@ -38,13 +38,13 @@
+                   if (OSExtensions.GetCurrent() == OS.Windows11 && result.Count > 0)
+                   {
+                       var maxFreq = result.Max(r => r.Frequency);
+          -            if (maxFreq >= 120 && display.IsInternal)
+          +            if (maxFreq >= 100 && display.IsInternal)
+                       {
+                           var targetInfo = GetTargetInfo(display);
+           
+                           if (targetInfo is not null && (targetInfo.IsBoostRefreshRate || targetInfo.IsDynamicRefreshRateSupported))
+                           {
+          -                    var lowFreq = targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies);
+          +                    var lowFreq = maxFreq == 100 ? 50 : targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies);
+                               if (lowFreq > 0 && lowFreq < maxFreq)
+                               {
+                                   result.Add(new RefreshRate(maxFreq, isDynamic: true, baseFrequency: lowFreq));
+          @@ -84,7 +84,10 @@
+           
+                   foreach (var frequency in frequencies)
+                   {
+          -            var lowFrequency = targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies.Where(f => f <= frequency));
+          +            // This experimental build permits a 50 Hz virtual rate on the advertised 100 Hz mode.
+          +            var lowFrequency = frequency == 100
+          +                ? 50
+          +                : targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies.Where(f => f <= frequency));
+                       if (lowFrequency > 0 && lowFrequency < frequency)
+                       {
+                           result.Add(new RefreshRate(frequency, isDynamic: true, baseFrequency: lowFrequency));
+          @@ -165,9 +168,11 @@
+           
+                   Log.Instance.Trace($"Current display settings: {currentSettings.ToExtendedString()} (reported: {state})");
+           
+          +        // The virtual 50 Hz rate does not require a separate static 50 Hz display mode.
+          +        var matchingFrequency = state.IsDynamic && state.Frequency == 100 ? state.Frequency : targetFrequency;
+                   var matchingSetting = display.DisplayScreen.GetPossibleSettings()
+                       .Where(dps => Match(dps, currentSettings))
+          -            .FirstOrDefault(dps => dps.Frequency == targetFrequency);
+          +            .FirstOrDefault(dps => dps.Frequency == matchingFrequency);
+           
+                   if (matchingSetting is not null)
+                   {
+          @@ -175,7 +180,7 @@
+                           matchingSetting.Resolution,
+                           currentSettings.Position,
+                           matchingSetting.ColorDepth,
+          -                matchingSetting.Frequency,
+          +                targetFrequency,
+                           matchingSetting.IsInterlaced,
+                           currentSettings.Orientation,
+                           currentSettings.OutputScalingMode
+          '@
+          $patch = "$env:RUNNER_TEMP\drr-100hz-one-time.patch"
+          [IO.File]::WriteAllText($patch, $patchContent + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+          git apply --check $patch
+          if ($LASTEXITCODE -ne 0) {
+            throw "The one-time 100 Hz DRR patch no longer applies cleanly."
+          }
+          git apply $patch
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to apply the one-time 100 Hz DRR patch."
+          }
+          git diff --stat
+
       - name: Resolve upstream dev version
         id: version
         env:
@@ -206,7 +277,7 @@ jobs:
       - name: Upload replacement DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-${{ steps.upstream.outputs.short_sha }}
+          name: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-100Hz-DRR-${{ steps.upstream.outputs.short_sha }}
           path: |
             build-patch/LenovoLegionToolkit.Lib.dll
             build-patch/Lenovo Legion Toolkit.dll
@@ -221,8 +292,8 @@ jobs:
           "" | Add-Content $env:GITHUB_STEP_SUMMARY
           "- Upstream dev: ${{ steps.upstream.outputs.sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
           "- Version: ${{ steps.version.outputs.version }}" | Add-Content $env:GITHUB_STEP_SUMMARY
-          "- Artifact: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-${{ steps.upstream.outputs.short_sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "- Artifact: LLT-${{ steps.version.outputs.version }}-replacement-DLLs-100Hz-DRR-${{ steps.upstream.outputs.short_sha }}" | Add-Content $env:GITHUB_STEP_SUMMARY
           "" | Add-Content $env:GITHUB_STEP_SUMMARY
-          "- Patch: ITS startup restore toggle" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "- Patches: ITS startup restore toggle + one-time 50-100 Hz DRR" | Add-Content $env:GITHUB_STEP_SUMMARY
           "" | Add-Content $env:GITHUB_STEP_SUMMARY
           "The artifact contains the two replacement DLLs plus SHA256SUMS.txt." | Add-Content $env:GITHUB_STEP_SUMMARY
