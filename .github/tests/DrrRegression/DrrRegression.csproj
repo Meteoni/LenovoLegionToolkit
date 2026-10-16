@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Exercise production switching and Actions code against a simulated display driver. -->
+    <Compile Include="../../../LenovoLegionToolkit.Lib/Features/RefreshRateFeature.cs" Link="RefreshRateFeature.cs" />
+    <Compile Include="../../../LenovoLegionToolkit.Lib/Features/IFeature.cs" Link="IFeature.cs" />
+    <Compile Include="../../../LenovoLegionToolkit.Lib/Extensions/DisplayExtensions.cs" Link="DisplayExtensions.cs" />
+    <Compile Include="../../../LenovoLegionToolkit.Lib/Utils/RetryHelper.cs" Link="RetryHelper.cs" />
+    <Compile Include="../../../LenovoLegionToolkit.Lib.Automation/Steps/AbstractFeatureAutomationStep.cs" Link="AbstractFeatureAutomationStep.cs" />
+    <Compile Include="../../../LenovoLegionToolkit.Lib.Automation/Steps/RefreshRateAutomationStep.cs" Link="RefreshRateAutomationStep.cs" />
+  </ItemGroup>
+</Project>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LenovoLegionToolkit.Lib.Extensions;
+using LenovoLegionToolkit.Lib.Settings;
 using LenovoLegionToolkit.Lib.System;
 using LenovoLegionToolkit.Lib.Utils;
 using WindowsDisplayAPI;
@@ -13,7 +14,28 @@ namespace LenovoLegionToolkit.Lib.Features;
 
 public class RefreshRateFeature : IFeature<RefreshRate>
 {
+    private readonly ApplicationSettings _settings;
+
+    public RefreshRateFeature(ApplicationSettings settings)
+    {
+        _settings = settings;
+    }
+
     public Task<bool> IsSupportedAsync() => Task.FromResult(true);
+
+    public async Task<bool> IsDynamicSupportedAsync()
+    {
+        if (OSExtensions.GetCurrent() != OS.Windows11)
+            return false;
+
+        var display = await InternalDisplay.GetAsync().ConfigureAwait(false);
+        if (display is null || !display.IsInternal)
+            return false;
+
+        var target = GetTargetInfo(display);
+        return target is not null &&
+            (target.IsBoostRefreshRate || target.IsDynamicRefreshRateSupported);
+    }
 
     public async Task<RefreshRate[]> GetAllStatesAsync()
     {
@@ -35,23 +57,8 @@ public class RefreshRateFeature : IFeature<RefreshRate>
 
         var result = frequencies.Select(freq => new RefreshRate(freq)).ToList();
 
-        if (OSExtensions.GetCurrent() == OS.Windows11 && result.Count > 0)
-        {
-            var maxFreq = result.Max(r => r.Frequency);
-            if (maxFreq >= 120 && display.IsInternal)
-            {
-                var targetInfo = GetTargetInfo(display);
-
-                if (targetInfo is not null && (targetInfo.IsBoostRefreshRate || targetInfo.IsDynamicRefreshRateSupported))
-                {
-                    var lowFreq = targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies);
-                    if (lowFreq > 0 && lowFreq < maxFreq)
-                    {
-                        result.Add(new RefreshRate(maxFreq, isDynamic: true, baseFrequency: lowFreq));
-                    }
-                }
-            }
-        }
+        // The dashboard, CLI and Actions must expose the same dynamic ranges.
+        result.AddRange(await GetAllDynamicStatesAsync().ConfigureAwait(false));
 
         Log.Instance.Trace($"Possible refresh rates are {string.Join(", ", result)}");
 
@@ -84,7 +91,15 @@ public class RefreshRateFeature : IFeature<RefreshRate>
 
         foreach (var frequency in frequencies)
         {
-            var lowFrequency = targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies.Where(f => f <= frequency));
+            var lowFrequency = frequency == _settings.Store.DynamicRefreshRateHighFrequency
+                ? _settings.Store.DynamicRefreshRateLowFrequency
+                : 0;
+
+            // The lower rate is virtual; it need not exist as a static display mode.
+            if (lowFrequency <= 0 || lowFrequency >= frequency)
+            {
+                lowFrequency = targetInfo.DisplayTarget.GetDynamicLowFrequency(frequencies.Where(f => f <= frequency));
+            }
             if (lowFrequency > 0 && lowFrequency < frequency)
             {
                 result.Add(new RefreshRate(frequency, isDynamic: true, baseFrequency: lowFrequency));
@@ -113,34 +128,34 @@ public class RefreshRateFeature : IFeature<RefreshRate>
 
         if (target is not null && target.IsBoostRefreshRate)
         {
-            var dynamicStates = (await GetAllStatesAsync().ConfigureAwait(false))
-                .Concat(await GetAllDynamicStatesAsync().ConfigureAwait(false))
-                .Where(r => r.IsDynamic)
-                .Distinct()
-                .ToArray();
+            var physicalFrequency = target.SignalInfo is null ? 0 : (int)Math.Round(target.SignalInfo.VerticalSyncFrequencyInMillihertz / 1000d);
+            var virtualFrequency = (int)Math.Round(target.FrequencyInMillihertz / 1000d);
+            if (virtualFrequency > 0)
+            {
+                reportedFrequency = virtualFrequency;
+            }
 
-            var physicalFrequency = target.SignalInfo is null ? 0 : (int)(target.SignalInfo.VerticalSyncFrequencyInMillihertz / 1000);
-
+            var dynamicStates = await GetAllDynamicStatesAsync().ConfigureAwait(false);
             var dynamicState = dynamicStates.FirstOrDefault(r => Math.Abs(r.Frequency - physicalFrequency) <= 1 && Math.Abs(r.BaseFrequency - reportedFrequency) <= 1);
             if (!dynamicState.IsDynamic)
             {
                 dynamicState = dynamicStates.FirstOrDefault(r => Math.Abs(r.BaseFrequency - reportedFrequency) <= 1);
             }
 
-            if (!dynamicState.IsDynamic)
+            if (!dynamicState.IsDynamic && physicalFrequency == 0)
             {
                 dynamicState = dynamicStates.FirstOrDefault(r => Math.Abs(r.Frequency - reportedFrequency) <= 1);
-            }
-
-            if (!dynamicState.IsDynamic)
-            {
-                dynamicState = dynamicStates.FirstOrDefault();
             }
 
             if (dynamicState.IsDynamic)
             {
                 Log.Instance.Trace($"Current refresh rate is {dynamicState}");
                 return dynamicState;
+            }
+
+            if (physicalFrequency > reportedFrequency && reportedFrequency > 0)
+            {
+                return new RefreshRate(physicalFrequency, isDynamic: true, baseFrequency: reportedFrequency);
             }
         }
 
@@ -167,7 +182,7 @@ public class RefreshRateFeature : IFeature<RefreshRate>
 
         var matchingSetting = display.DisplayScreen.GetPossibleSettings()
             .Where(dps => Match(dps, currentSettings))
-            .FirstOrDefault(dps => dps.Frequency == targetFrequency);
+            .FirstOrDefault(dps => dps.Frequency == (state.IsDynamic ? state.Frequency : targetFrequency));
 
         if (matchingSetting is not null)
         {
@@ -175,7 +190,7 @@ public class RefreshRateFeature : IFeature<RefreshRate>
                 matchingSetting.Resolution,
                 currentSettings.Position,
                 matchingSetting.ColorDepth,
-                matchingSetting.Frequency,
+                targetFrequency,
                 matchingSetting.IsInterlaced,
                 currentSettings.Orientation,
                 currentSettings.OutputScalingMode
