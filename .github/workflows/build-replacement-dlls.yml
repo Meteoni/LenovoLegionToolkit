@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  UPSTREAM_SHA: c7e63484bafde60d3fbd843cd5d3d0b24aa3562c
-  LLT_VERSION: 2.36.5.8
+  UPSTREAM_SHA: 24563ceaa168aac6e5b4d8785ecea8eef9e53b0c
+  LLT_VERSION: 2.36.5.16
 
 jobs:
   build:
@@ -36,6 +36,8 @@ jobs:
           if ($tagCommit -ne $env:UPSTREAM_SHA) { throw 'Official release tag does not match the pinned upstream commit.' }
           git merge-base --is-ancestor $env:UPSTREAM_SHA HEAD
           if ($LASTEXITCODE -ne 0) { throw 'Integrated source does not contain the pinned upstream commit.' }
+          git diff --exit-code $env:UPSTREAM_SHA HEAD -- LenovoLegionToolkit.Lib/Features/ITSModeFeature.cs LenovoLegionToolkit.Lib/Settings/ITSModeSettings.cs LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml LenovoLegionToolkit.WPF/Controls/Settings/SettingsPowerControl.xaml.cs
+          if ($LASTEXITCODE -ne 0) { throw 'ITS implementation differs from official dev; this build must contain only the DRR customization.' }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -86,7 +88,7 @@ jobs:
       - name: Upload replacement DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: LLT-2.36.5.8-replacement-DLLs-ITS-DRR-c7e63484
+          name: LLT-2.36.5.16-replacement-DLLs-DRR-only-24563cea
           path: replacement-dlls/*
           if-no-files-found: error
           retention-days: 90
@@ -98,7 +100,7 @@ jobs:
           - Official baseline: $env:UPSTREAM_SHA
           - Assembly and file versions: $env:LLT_VERSION
           - Source: $env:GITHUB_SHA
-          - Features: ITS startup restore toggle and configurable virtual/physical DRR pair, shared by dashboard and Actions.
+          - Features: Configurable virtual/physical DRR pair, shared by dashboard and Actions.
           - Example: custom 50/100 Hz on battery; fixed 120 Hz on AC.
           - Validation: production DRR and Actions source regression checks plus assembly identities and SHA-256 checksums.
           "@ | Add-Content $env:GITHUB_STEP_SUMMARY

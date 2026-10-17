@@ -57,12 +57,12 @@ public partial class SettingsPowerControl
 
         var isPowerModeFeatureSupported = await _powerModeFeature.IsSupportedAsync();
         var isITSModeFeatureSupported = await _itsModeFeature.IsSupportedAsync();
+        _restoreITSModeOnStartupCard.Visibility = isITSModeFeatureSupported ? Visibility.Visible : Visibility.Collapsed;
+        _restoreITSModeOnStartupToggle.IsChecked = _itsModeSettings.Store.RestoreLastStateOnStartup;
+        _restoreITSModeOnStartupToggle.Visibility = Visibility.Visible;
         var isAnyPowerFeatureSupported = isPowerModeFeatureSupported || isITSModeFeatureSupported;
         var isWindowsPowerModeSupported = WindowsPowerModeController.IsOverlaySupported;
         var powerModeMappingMode = _settings.Store.PowerModeMappingMode;
-
-        _restoreITSModeOnStartupCard.Visibility = isITSModeFeatureSupported ? Visibility.Visible : Visibility.Collapsed;
-        _restoreITSModeOnStartupToggle.IsChecked = _itsModeSettings.Store.RestoreStateOnStartup;
 
         if (!isWindowsPowerModeSupported && powerModeMappingMode == PowerModeMappingMode.WindowsPowerMode)
         {
@@ -82,10 +82,22 @@ public partial class SettingsPowerControl
         _onBatterySinceResetToggle.Visibility = Visibility.Visible;
 
         _godModeFnQSwitchableToggle.Visibility = Visibility.Visible;
-        _restoreITSModeOnStartupToggle.Visibility = Visibility.Visible;
         _powerModeMappingComboBox.Visibility = Visibility.Visible;
 
         _isRefreshing = false;
+    }
+
+    private void RestoreITSModeOnStartupToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRefreshing)
+            return;
+
+        var state = _restoreITSModeOnStartupToggle.IsChecked;
+        if (state is null)
+            return;
+
+        _itsModeSettings.Store.RestoreLastStateOnStartup = state.Value;
+        _itsModeSettings.SynchronizeStore();
     }
 
     private async void GodModeFnQSwitchableToggle_Click(object sender, RoutedEventArgs e)
@@ -188,19 +200,6 @@ public partial class SettingsPowerControl
     private void WindowsPowerPlansControlPanel_Click(object sender, RoutedEventArgs e)
     {
         Process.Start("control", "/name Microsoft.PowerOptions");
-    }
-
-    private void RestoreITSModeOnStartupToggle_Click(object sender, RoutedEventArgs e)
-    {
-        if (_isRefreshing)
-            return;
-
-        var state = _restoreITSModeOnStartupToggle.IsChecked;
-        if (state is null)
-            return;
-
-        _itsModeSettings.Store.RestoreStateOnStartup = state.Value;
-        _itsModeSettings.SynchronizeStore();
     }
 
     private void OnBatterySinceResetToggle_Click(object sender, RoutedEventArgs e)

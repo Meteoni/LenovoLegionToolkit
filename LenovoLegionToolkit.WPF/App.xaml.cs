@@ -282,6 +282,7 @@ public partial class App
             await SafeInitAsync(InitAIControllerAsync, "AI Controller");
             await SafeInitAsync(InitHWiNFOAsync, "HWiNFO Integration");
             await SafeInitAsync(InitIpcServerAsync, "IPC Server");
+            await SafeExecuteAsync<PowerButtonLedSyncController>(c => c.StartAsync());
         });
 
         await Task.WhenAll(_deferredInitTasks);
@@ -397,6 +398,7 @@ public partial class App
 
     public async Task ShutdownAsync()
     {
+        await SafeExecuteAsync<PowerButtonLedSyncController>(c => c.StopAsync());
         await SafeExecuteAsync<AIController>(c => c.StopAsync());
 
         await SafeExecuteAsync<RGBKeyboardBacklightController>(async c =>
@@ -961,14 +963,9 @@ public partial class App
 
             return false;
         }
-        catch (InvalidOperationException)
-        {
-            Log.Instance.Trace($"Profile apply has been canceled due to AC issue.");
-            return false;
-        }
         catch (Exception ex)
         {
-            Log.Instance.Trace($"Failed to apply profile on startup: {ex.Message}", ex);
+            Log.Instance.Trace($"Failed to initialize AMD Overclocking Controller.", ex);
             return false;
         }
     }

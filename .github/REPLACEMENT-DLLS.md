@@ -1,10 +1,10 @@
-# LLT 2.36.5.8 replacement DLLs
+# LLT 2.36.5.16 replacement DLLs
 
-Built from official dev commit `c7e63484bafde60d3fbd843cd5d3d0b24aa3562c`, with the fork's ITS startup restore option and configurable DRR range integrated into the source. Both assembly and file versions are `2.36.5.8`.
+Built from official dev commit `24563ceaa168aac6e5b4d8785ecea8eef9e53b0c`, with only the configurable DRR changes integrated into the application source. Both assembly and file versions are `2.36.5.16`.
 
 ## Install
 
-1. Install the official **2.36.5.8** dev release and fully exit LLT, including its tray process.
+1. Install the official **2.36.5.16** dev release and fully exit LLT, including its tray process.
 2. Back up `LenovoLegionToolkit.Lib.dll` and `Lenovo Legion Toolkit.dll` in the installation folder.
 3. Replace those two files with the DLLs from this artifact, then restart LLT.
 
@@ -21,13 +21,15 @@ For a direct switch, select **100 Hz** on the dashboard and enable its dynamic r
 
 The dashboard and Actions use the same dynamic range list. Saved Actions retain their explicit pair even if the custom default is later changed. Windows capability checks and the upstream native switching/fallback behavior are retained.
 
-## ITS startup mode
+## Official ITS startup option
 
-Under **Settings → Power**, turn **Restore ITS mode on startup** off to keep the current hardware ITS mode when LLT starts. This initializes LLT's displayed mode without reapplying a mode or overwriting the saved last mode. The default remains enabled. Manual mode changes and Actions continue to work.
+ITS behavior and the Settings -> Power control are identical to official dev. The old fork-specific ITS patch has been removed. Official commit `4435f0e7` adds `RestoreLastStateOnStartup`, which defaults to enabled. Turn off the official restore option again after upgrading: the old fork used a different setting name (`RestoreStateOnStartup`).
+
+When disabled, official dev does not restore a different saved ITS mode, but still reapplies the current mode. This build preserves that behavior unchanged.
 
 ## Build and verification
 
-The replacement workflow compiles the integrated source directly. It verifies that the official `v2.36.5.8` tag resolves to the pinned commit, runs regression checks against the production refresh-rate and Actions sources, and checks both assembly identities and file versions before publishing the artifact. It does not check out a moving upstream branch or apply patches during the build.
+The replacement workflow compiles the integrated source directly. It verifies that the official `v2.36.5.16` tag resolves to the pinned commit, runs regression checks against the production refresh-rate and Actions sources, and checks both assembly identities and file versions before publishing the artifact. It does not check out a moving upstream branch or apply patches during the build.
 
 The earlier successful fork build, run `37579274823`, supplies the reference 50/100 switching behavior: initialize physical 100 Hz, request virtual 50 Hz with boost enabled, and expose that same range in Actions. The new implementation generalizes that behavior to the saved custom pair.
 

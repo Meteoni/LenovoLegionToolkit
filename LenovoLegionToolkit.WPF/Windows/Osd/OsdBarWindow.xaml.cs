@@ -121,6 +121,11 @@ public partial class OsdBarWindow : OsdWindowBase
         _memLabel.Foreground = _categoryBrush;
         _pchName.Foreground = _categoryBrush;
 
+        _separatorFps.Fill = _categoryBrush;
+        _separatorCpu.Fill = _categoryBrush;
+        _separatorGpu.Fill = _categoryBrush;
+        _separatorMemory.Fill = _categoryBrush;
+
         ApplyCornerRadius(_backgroundBorder);
     }
 
@@ -131,7 +136,7 @@ public partial class OsdBarWindow : OsdWindowBase
         if (ActualWidth <= 0)
             return;
 
-        var workArea = SystemParameters.WorkArea;
+        var workArea = CurrentWorkArea;
 
         Left = workArea.Left + (workArea.Width - ActualWidth) / 2;
         Top = workArea.Top;

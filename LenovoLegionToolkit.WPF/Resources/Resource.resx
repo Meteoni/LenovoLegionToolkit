@@ -1813,12 +1813,6 @@ Click Yes to disable and No to ignore.</value>
   <data name="MacroSequenceControl_Repeat_Title" xml:space="preserve">
     <value>Repeat</value>
   </data>
-  <data name="MainWindow_FnKeysRunning" xml:space="preserve">
-    <value>Lenovo Hotkeys is running in the background.</value>
-  </data>
-  <data name="MainWindow_VantageRunning" xml:space="preserve">
-    <value>Lenovo Vantage and/or ImController is running in the background.</value>
-  </data>
   <data name="MainWindow_CheckForUpdates_Error_ReachedRateLimit_Message" xml:space="preserve">
     <value>API rate limit reached, please try again later.</value>
   </data>
@@ -1830,6 +1824,9 @@ Click Yes to disable and No to ignore.</value>
   </data>
   <data name="MainWindow_CheckForUpdates_Success_Title" xml:space="preserve">
     <value>No updates found</value>
+  </data>
+  <data name="MainWindow_FnKeysRunning" xml:space="preserve">
+    <value>Lenovo Hotkeys is running in the background.</value>
   </data>
   <data name="MainWindow_LegionSpaceRunning" xml:space="preserve">
     <value>Legion Space is running in the background.</value>
@@ -1869,6 +1866,9 @@ Click Yes to disable and No to ignore.</value>
   </data>
   <data name="MainWindow_UpdateAvailableWithVersion" xml:space="preserve">
     <value>Update {0} available!</value>
+  </data>
+  <data name="MainWindow_VantageRunning" xml:space="preserve">
+    <value>Lenovo Vantage and/or ImController is running in the background.</value>
   </data>
   <data name="MessageBoxHelper_DontShowAgain" xml:space="preserve">
     <value>Don't show again.</value>
@@ -3342,12 +3342,6 @@ Performance mode can also be changed with Fn+Q.</value>
   <data name="SettingsPage_PowerModeMapping_Title" xml:space="preserve">
     <value>Power Mode Synchronization</value>
   </data>
-  <data name="SettingsPage_RestoreITSModeOnStartup_Message" xml:space="preserve">
-    <value>Reapply the last used ITS mode when the app starts.</value>
-  </data>
-  <data name="SettingsPage_RestoreITSModeOnStartup_Title" xml:space="preserve">
-    <value>Restore ITS mode on startup</value>
-  </data>
   <data name="SettingsPage_RememberWindowPosition_Message" xml:space="preserve">
     <value>Restore previous window position on application launch.</value>
   </data>
@@ -3365,6 +3359,12 @@ Performance mode can also be changed with Fn+Q.</value>
   </data>
   <data name="SettingsPage_RestartRequired_Message" xml:space="preserve">
     <value>Restart to apply changes.</value>
+  </data>
+  <data name="SettingsPage_RestoreITSModeOnStartup_Message" xml:space="preserve">
+    <value>Automatically restore the last ITS mode when the app starts.</value>
+  </data>
+  <data name="SettingsPage_RestoreITSModeOnStartup_Title" xml:space="preserve">
+    <value>Restore ITS Mode on Startup</value>
   </data>
   <data name="SettingsPage_ScriptConsole_Message" xml:space="preserve">
     <value>Execute C# scripts in the application runtime.</value>
@@ -3915,6 +3915,18 @@ Logging will be enabled automatically, if you choose to continue.</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="PowerButtonLedSync_Failed" xml:space="preserve">
+    <value>Synchronization failed.</value>
+  </data>
+  <data name="PowerButtonLedSync_Message" xml:space="preserve">
+    <value>Synchronize the power button light with the keyboard backlight.</value>
+  </data>
+  <data name="PowerButtonLedSync_Title" xml:space="preserve">
+    <value>Power Button Light Sync</value>
+  </data>
+  <data name="PowerButtonLedSync_Unsupported" xml:space="preserve">
+    <value>Your device does not support the power button light sync.</value>
   </data>
   <data name="SettingsPage_DynamicRefreshRate_Title" xml:space="preserve">
     <value>Custom dynamic refresh rate</value>
