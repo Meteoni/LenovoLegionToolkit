@@ -495,7 +495,7 @@ public class SensorsGroupController : IDisposable
         {
             if (_activeUpdateTask == null)
             {
-                _activeUpdateTask = PerformUpdateInternal(scope);
+                _activeUpdateTask = Task.Run(() => PerformUpdateInternal(scope));
             }
             updateTask = _activeUpdateTask;
         }
@@ -525,7 +525,6 @@ public class SensorsGroupController : IDisposable
                     if (_isResetting || _computer == null || !_hardwareInitialized) return;
                     try
                     {
-                        var brokenHardware = new List<IHardware>();
                         foreach (var h in _hardware)
                         {
                             if (h == null) continue;
@@ -536,14 +535,8 @@ public class SensorsGroupController : IDisposable
                             }
                             catch (Exception ex)
                             {
-                                Log.Instance.Trace($"Failed to update hardware {h.Name}: {ex.Message}. It will be removed from the update list.", ex);
-                                brokenHardware.Add(h);
+                                Log.Instance.Trace($"Failed to update hardware {h.Name}: {ex.Message}. It will be retried on the next update.", ex);
                             }
-                        }
-
-                        foreach (var h in brokenHardware)
-                        {
-                            _hardware.Remove(h);
                         }
 
                         if (!dgpuEjectInProgress && _dgpuHardwareSkipped)
@@ -593,14 +586,15 @@ public class SensorsGroupController : IDisposable
                         snap = snap.WithValues(_memoryProvider.Values);
                         snap = snap.WithValues(_storageProvider.Values);
                         Snapshot = snap;
-
-                        SensorsUpdated?.Invoke(Snapshot);
                     }
                     catch (Exception ex)
                     {
+                        Log.Instance.Trace($"Sensor update failed.", ex);
                         if (ex is IndexOutOfRangeException) Task.Run(ResetSensors);
+                        return;
                     }
                 }
+                SensorsUpdated?.Invoke(Snapshot);
             }).ConfigureAwait(false);
         }
         finally

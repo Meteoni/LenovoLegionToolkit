@@ -117,6 +117,8 @@ namespace WindowsDisplayAPI
     public class DisplayScreen
     {
         public int[] Frequencies { get; set; } = [60, 100, 120];
+        public ulong? TransportFrequencyInMillihertz { get; set; }
+        public bool IgnorePhysicalModeChanges { get; set; }
         public List<int> PhysicalChanges { get; } = [];
         public DisplaySetting CurrentSetting { get; set; } = new();
         public IEnumerable<DisplayPossibleSetting> GetPossibleSettings() => Frequencies.Select(f => new DisplayPossibleSetting { Frequency = f });
@@ -124,9 +126,17 @@ namespace WindowsDisplayAPI
         public void SetSettings(DisplaySetting setting, bool apply)
         {
             PhysicalChanges.Add(setting.Frequency);
+            if (IgnorePhysicalModeChanges)
+                return;
+
             CurrentSetting = setting;
+            var signal = new PathTargetSignalInfo(setting, setting.Resolution);
+            if (TransportFrequencyInMillihertz is { } transportFrequency)
+                signal.VerticalSyncFrequencyInMillihertz = transportFrequency;
+
             PathInfo.Active = [new PathInfo("internal", setting.Position, setting.Resolution, setting.ColorDepth,
-                [new PathTargetInfo(PathDisplayTarget.Instance, new PathTargetSignalInfo(setting, setting.Resolution), 0, 0, true, false)])];
+                [new PathTargetInfo(PathDisplayTarget.Instance, signal, 0, 0, true, false)
+                    { FrequencyInMillihertz = (ulong)setting.Frequency * 1000 }])];
         }
     }
 }
@@ -135,6 +145,7 @@ namespace WindowsDisplayAPI.DisplayConfig
     public struct DisplayAdvancedColorInfo;
     public class PathDisplayTarget
     {
+        public uint TargetId => 0;
         public static PathDisplayTarget Instance { get; } = new();
         // Emulate the default detector refusing sub-120 Hz physical modes.
         public int GetDynamicLowFrequency(IEnumerable<int> frequencies) => frequencies.DefaultIfEmpty().Max() >= 120 ? 60 : 0;
@@ -162,6 +173,7 @@ namespace WindowsDisplayAPI.DisplayConfig
         public ulong FrequencyInMillihertz { get; set; } = 120000;
         public int Rotation { get; }
         public int Scaling { get; }
+        public int ScanLineOrdering => 0;
         public PathTargetInfo() { }
         public PathTargetInfo(PathDisplayTarget target, PathTargetSignalInfo signal, int rotation, int scaling, bool virtualMode, bool boost)
         {
@@ -171,9 +183,20 @@ namespace WindowsDisplayAPI.DisplayConfig
         }
         public PathTargetInfo(PathDisplayTarget target, PathTargetSignalInfo signal, PathTargetDesktopImage desktop, int rotation, int scaling, bool virtualMode, bool boost, ulong frequency)
             : this(target, signal, rotation, scaling, virtualMode, boost) => FrequencyInMillihertz = frequency;
+        public PathTargetInfo(PathDisplayTarget target, ulong frequency, int scanLineOrdering, int rotation, int scaling, bool virtualMode)
+            : this(target, new PathTargetSignalInfo { VerticalSyncFrequencyInMillihertz = frequency }, rotation, scaling, virtualMode, false) { }
     }
     public class PathInfo(object source, Point position, Size resolution, int pixelFormat, PathTargetInfo[] targets)
     {
+        public bool IsModeInformationAvailable { get; set; } = true;
+        public bool IsCloneMember { get; }
+        public uint CloneGroupId { get; }
+        public PathInfo(object source, Point position, Size resolution, int pixelFormat, PathTargetInfo[] targets, uint cloneGroup)
+            : this(source, position, resolution, pixelFormat, targets)
+        {
+            IsCloneMember = true;
+            CloneGroupId = cloneGroup;
+        }
         public static PathInfo[] Active { get; set; } = [new("internal", new(200, 100), new(2560, 1600), 32, [new()])];
         public static bool RejectApply { get; set; }
         public static bool IgnoreBoost { get; set; }

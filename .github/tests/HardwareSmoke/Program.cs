@@ -4,6 +4,7 @@ using LenovoLegionToolkit.Lib.Automation;
 using LenovoLegionToolkit.Lib.Automation.Steps;
 using LenovoLegionToolkit.Lib.Features;
 using LenovoLegionToolkit.Lib.Settings;
+using LenovoLegionToolkit.Lib.System;
 using Windows.Devices.Display.Core;
 using WindowsDisplayAPI.DisplayConfig;
 
@@ -13,9 +14,13 @@ settings.Store.DynamicRefreshRateLowFrequency = 50;
 settings.Store.DynamicRefreshRateHighFrequency = 100;
 var feature = new RefreshRateFeature(settings);
 IoCContainer.Initialize(new DisplayTestModule(feature));
+var display = await InternalDisplay.GetAsync() ?? throw new Exception("Internal display not found.");
+Console.WriteLine($"Library version: {typeof(RefreshRateFeature).Assembly.GetName().Version}");
+Console.WriteLine($"Library SHA256: {Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(RefreshRateFeature).Assembly.Location)))}");
 
-void Report(string label)
+void Report(string label, RefreshRate? expected = null)
 {
+    var matchedDisplay = expected is null;
     using var manager = DisplayManager.Create(DisplayManagerOptions.VirtualRefreshRateAware);
     var result = manager.TryReadCurrentStateForAllTargets();
     foreach (var target in result.State.Targets.Where(target => target.IsConnected))
@@ -27,9 +32,29 @@ void Report(string label)
             if (rate is { } value)
                 Console.WriteLine($"  WinRT rate: {value.VerticalSyncRate.Numerator}/{value.VerticalSyncRate.Denominator}, syncs per presentation: {value.VerticalSyncsPerPresentation}");
         }
+
+        if (expected is { } expectedRate && string.Equals(target.DeviceInterfacePath, display.DevicePath, StringComparison.OrdinalIgnoreCase))
+        {
+            matchedDisplay = true;
+            if (path.PresentationRate is not { } rate)
+                throw new Exception("Windows did not return the active presentation rate.");
+
+            var upperFrequency = (double)rate.VerticalSyncRate.Numerator / rate.VerticalSyncRate.Denominator;
+            var presentationFrequency = upperFrequency / Math.Max(1, rate.VerticalSyncsPerPresentation);
+            var expectedPresentationFrequency = expectedRate.IsDynamic ? expectedRate.BaseFrequency : expectedRate.Frequency;
+            if (Math.Abs(upperFrequency - expectedRate.Frequency) > 1 || Math.Abs(presentationFrequency - expectedPresentationFrequency) > 1)
+                throw new Exception($"Windows presentation API does not confirm {expectedRate}.");
+        }
     }
+    if (!matchedDisplay)
+        throw new Exception("The internal display was missing from the Windows presentation query.");
+
     foreach (var target in PathInfo.GetActivePaths(virtualModeAware: true).SelectMany(path => path.TargetsInfo))
+    {
         Console.WriteLine($"  CCD: boost={target.IsBoostRefreshRate}, virtual={target.FrequencyInMillihertz} mHz, signal={target.SignalInfo?.VerticalSyncFrequencyInMillihertz} mHz");
+        if (expected is { } expectedRate && target.DisplayTarget.IsInternal && target.IsBoostRefreshRate != expectedRate.IsDynamic)
+            throw new Exception("The Windows DRR boost flag does not match the requested mode.");
+    }
 }
 
 Report("Original");
@@ -45,12 +70,12 @@ try
         throw new Exception("50/100 Hz is missing from the shared dashboard/Actions state list.");
 
     await feature.SetStateAsync(dynamic100);
-    Report("Direct 50/100");
+    Report("Direct 50/100", dynamic100);
     if (await feature.GetStateAsync() != dynamic100)
         throw new Exception("Direct DRR readback did not match 50/100 Hz.");
 
     await feature.SetStateAsync(fixed120);
-    Report("Direct fixed 120");
+    Report("Direct fixed 120", fixed120);
     if (await feature.GetStateAsync() != fixed120)
         throw new Exception("Direct fixed readback did not match 120 Hz.");
 
@@ -60,12 +85,12 @@ try
     if (!(await dcAction.GetAllStatesAsync()).Contains(dynamic100))
         throw new Exception("50/100 Hz is missing from Actions.");
     await dcAction.RunAsync(context, environment, default);
-    Report("DC Action 50/100");
+    Report("DC Action 50/100", dynamic100);
     if (await feature.GetStateAsync() != dynamic100)
         throw new Exception("DC Action did not restore 50/100 Hz.");
 
     await new RefreshRateAutomationStep(fixed120).RunAsync(context, environment, default);
-    Report("AC Action fixed 120");
+    Report("AC Action fixed 120", fixed120);
     if (await feature.GetStateAsync() != fixed120)
         throw new Exception("AC Action did not restore fixed 120 Hz.");
     Console.WriteLine("PASS: Direct and Actions switching to dynamic 50/100 Hz and fixed 120 Hz.");

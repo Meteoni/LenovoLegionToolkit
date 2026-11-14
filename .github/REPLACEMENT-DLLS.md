@@ -1,10 +1,10 @@
-# LLT 2.36.5.16 replacement DLLs
+# LLT 2.36.8.6 replacement DLLs
 
-Built from official dev commit `24563ceaa168aac6e5b4d8785ecea8eef9e53b0c`, with only the configurable DRR changes integrated into the application source. Both assembly and file versions are `2.36.5.16`.
+Built from official dev commit `08a111cbf1f604e9749cac26472647270f824e05`, with only the configurable DRR changes integrated into the application source. Both assembly and file versions are `2.36.8.6`.
 
 ## Install
 
-1. Install the official **2.36.5.16** dev release and fully exit LLT, including its tray process.
+1. Run the official updater, confirm the installed version is **2.36.8.6**, and fully exit LLT, including its tray process.
 2. Back up `LenovoLegionToolkit.Lib.dll` and `Lenovo Legion Toolkit.dll` in the installation folder.
 3. Replace those two files with the DLLs from this artifact, then restart LLT.
 
@@ -19,17 +19,17 @@ The executable, other DLLs, language folders and configuration stay in place. Re
 
 For a direct switch, select **100 Hz** on the dashboard and enable its dynamic refresh rate toggle. Select **120 Hz** and turn that toggle off for fixed 120 Hz. Saving a custom range changes the available choice; it does not immediately switch the display. **Reset** restores upstream's automatically detected ranges.
 
-The dashboard and Actions use the same dynamic range list. Saved Actions retain their explicit pair even if the custom default is later changed. Windows capability checks and the upstream native switching/fallback behavior are retained.
+The dashboard and Actions use the same dynamic range list. Saved Actions retain their explicit pair even if the custom default is later changed. The latest upstream missing-mode, clone-group and fallback fixes are retained. DRR initialization also accepts an applied presentation mode when the panel keeps a different native transport timing; a mode that did not apply still uses the upstream fallback.
 
 ## Official ITS startup option
 
-ITS behavior and the Settings -> Power control are identical to official dev. The old fork-specific ITS patch has been removed. Official commit `4435f0e7` adds `RestoreLastStateOnStartup`, which defaults to enabled. Turn off the official restore option again after upgrading: the old fork used a different setting name (`RestoreStateOnStartup`).
+ITS behavior, its updated experimental driver, and the Settings -> Power control are identical to official dev. There is no fork-specific ITS patch. The official `RestoreLastStateOnStartup` setting is preserved from the prior 2.36.5.16 installation.
 
 When disabled, official dev does not restore a different saved ITS mode, but still reapplies the current mode. This build preserves that behavior unchanged.
 
 ## Build and verification
 
-The replacement workflow compiles the integrated source directly. It verifies that the official `v2.36.5.16` tag resolves to the pinned commit, runs regression checks against the production refresh-rate and Actions sources, and checks both assembly identities and file versions before publishing the artifact. It does not check out a moving upstream branch or apply patches during the build.
+The replacement workflow compiles the integrated source directly. It verifies that the official `v2.36.8.6` tag resolves to the pinned commit, runs regression checks against the production refresh-rate and Actions sources, and checks both assembly identities and file versions before publishing the artifact. It does not check out a moving upstream branch or apply patches during the build.
 
 The earlier successful fork build, run `37579274823`, supplies the reference 50/100 switching behavior: initialize physical 100 Hz, request virtual 50 Hz with boost enabled, and expose that same range in Actions. The new implementation generalizes that behavior to the saved custom pair.
 

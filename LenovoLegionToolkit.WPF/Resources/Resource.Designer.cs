@@ -2773,6 +2773,24 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   查找类似 The discrete GPU did not accept the selected performance state. 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStateApplyFailedMessage {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStateApplyFailedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 P-State not applied 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStateApplyFailedTitle {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStateApplyFailedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Auto (Dynamic) 的本地化字符串。
         /// </summary>
         public static string DiscreteGPUControl_PStateAuto {
@@ -2782,7 +2800,7 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
-        ///   查找类似 Lock the discrete GPU to a specific performance state. 的本地化字符串。
+        ///   查找类似 Lock the GPU to a performance state. 的本地化字符串。
         /// </summary>
         public static string DiscreteGPUControl_PStateLockDescription {
             get {
@@ -2791,7 +2809,7 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
-        ///   查找类似 Prevents downclocking and eliminates transition latency, but increases power consumption. 的本地化字符串。
+        ///   查找类似 Prevents downclocking but uses more power. 的本地化字符串。
         /// </summary>
         public static string DiscreteGPUControl_PStateLockInfo {
             get {
@@ -2805,6 +2823,51 @@ namespace LenovoLegionToolkit.WPF.Resources {
         public static string DiscreteGPUControl_PStateLockTitle {
             get {
                 return ResourceManager.GetString("DiscreteGPUControl_PStateLockTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Max pins the highest clock of the selected state, Min pins the lowest, and None locks the state without a clock pin. 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStatePinInfo {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStatePinInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Max 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStatePinMax {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStatePinMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Min 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStatePinMin {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStatePinMin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 None 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStatePinNone {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStatePinNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 P0 TDP 的本地化字符串。
+        /// </summary>
+        public static string DiscreteGPUControl_PStateRatedTdp {
+            get {
+                return ResourceManager.GetString("DiscreteGPUControl_PStateRatedTdp", resourceCulture);
             }
         }
         
@@ -7318,38 +7381,29 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
-        ///   查找类似 Synchronization failed. 的本地化字符串。
+        ///   查找类似 Brightness 的本地化字符串。
         /// </summary>
-        public static string PowerButtonLedSync_Failed {
+        public static string PowerButtonLed_Brightness {
             get {
-                return ResourceManager.GetString("PowerButtonLedSync_Failed", resourceCulture);
+                return ResourceManager.GetString("PowerButtonLed_Brightness", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Adjust the light brightness or sync it with the keyboard backlight. 的本地化字符串。
+        /// </summary>
+        public static string PowerButtonLed_Message {
+            get {
+                return ResourceManager.GetString("PowerButtonLed_Message", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Synchronize the power button light with the keyboard backlight. 的本地化字符串。
+        ///   查找类似 Power Button Light 的本地化字符串。
         /// </summary>
-        public static string PowerButtonLedSync_Message {
+        public static string PowerButtonLed_Title {
             get {
-                return ResourceManager.GetString("PowerButtonLedSync_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Power Button Light Sync 的本地化字符串。
-        /// </summary>
-        public static string PowerButtonLedSync_Title {
-            get {
-                return ResourceManager.GetString("PowerButtonLedSync_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Your device does not support the power button light sync. 的本地化字符串。
-        /// </summary>
-        public static string PowerButtonLedSync_Unsupported {
-            get {
-                return ResourceManager.GetString("PowerButtonLedSync_Unsupported", resourceCulture);
+                return ResourceManager.GetString("PowerButtonLed_Title", resourceCulture);
             }
         }
         
@@ -10221,11 +10275,29 @@ namespace LenovoLegionToolkit.WPF.Resources {
         }
         
         /// <summary>
+        ///   查找类似 (HID) 的本地化字符串。
+        /// </summary>
+        public static string SpecialKey_ConsumerSuffix {
+            get {
+                return ResourceManager.GetString("SpecialKey_ConsumerSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 (Driver) 的本地化字符串。
         /// </summary>
         public static string SpecialKey_DriverSuffix {
             get {
                 return ResourceManager.GetString("SpecialKey_DriverSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 (Key) 的本地化字符串。
+        /// </summary>
+        public static string SpecialKey_KeyboardSuffix {
+            get {
+                return ResourceManager.GetString("SpecialKey_KeyboardSuffix", resourceCulture);
             }
         }
         

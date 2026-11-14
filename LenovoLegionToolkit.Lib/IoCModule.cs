@@ -108,6 +108,8 @@ public class IoCModule : Module
         builder.Register<DisplayBrightnessListener>().AutoActivateListener();
         builder.Register<DisplayConfigurationListener>().AutoActivateListener();
         builder.Register<DriverKeyListener>().SingleInstance().AutoActivateListener();
+        builder.Register<ConsumerControlKeyListener>().SingleInstance().AutoActivateListener();
+        builder.Register<KeyboardHookListener>().SingleInstance().AutoActivateListener();
         builder.Register<LightingChangeListener>().AutoActivateListener();
         builder.Register<NativeWindowsMessageListener>().AutoActivateListener();
         builder.Register<PowerModeListener>().AutoActivateListener();
@@ -147,7 +149,6 @@ public class IoCModule : Module
         builder.Register<SmartFnLockController>();
         builder.Register<SpectrumKeyboardBacklightController>();
         builder.Register<PowerButtonLedController>();
-        builder.Register<PowerButtonLedSyncController>();
         builder.Register<WindowsPowerModeController>();
         builder.Register<WindowsPowerPlanController>();
         builder.Register<FpsSensorController>();

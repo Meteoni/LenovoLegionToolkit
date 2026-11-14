@@ -1492,6 +1492,15 @@ namespace LenovoLegionToolkit.Lib.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Breath.
+        /// </summary>
+        public static string SpectrumKeyboardBacklightEffectType_Breath {
+            get {
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Breath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Color Change.
         /// </summary>
         public static string SpectrumKeyboardBacklightEffectType_ColorChange {
@@ -1519,20 +1528,29 @@ namespace LenovoLegionToolkit.Lib.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rain.
+        ///   Looks up a localized string similar to Horse Race Lamp.
         /// </summary>
-        public static string SpectrumKeyboardBacklightEffectType_Rain {
+        public static string SpectrumKeyboardBacklightEffectType_HorseRaceLamp {
             get {
-                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Rain", resourceCulture);
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_HorseRaceLamp", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rainbow Screw.
+        ///   Looks up a localized string similar to Raining.
         /// </summary>
-        public static string SpectrumKeyboardBacklightEffectType_RainbowScrew {
+        public static string SpectrumKeyboardBacklightEffectType_Raining {
             get {
-                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_RainbowScrew", resourceCulture);
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Raining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Spiral Rainbow.
+        /// </summary>
+        public static string SpectrumKeyboardBacklightEffectType_SpiralRainbow {
+            get {
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_SpiralRainbow", resourceCulture);
             }
         }
         
@@ -1546,11 +1564,11 @@ namespace LenovoLegionToolkit.Lib.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ripple.
+        ///   Looks up a localized string similar to Ripples.
         /// </summary>
-        public static string SpectrumKeyboardBacklightEffectType_Ripple {
+        public static string SpectrumKeyboardBacklightEffectType_Ripples {
             get {
-                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Ripple", resourceCulture);
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Ripples", resourceCulture);
             }
         }
         
@@ -1564,11 +1582,20 @@ namespace LenovoLegionToolkit.Lib.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type.
+        ///   Looks up a localized string similar to Lighting.
         /// </summary>
-        public static string SpectrumKeyboardBacklightEffectType_Type {
+        public static string SpectrumKeyboardBacklightEffectType_Lighting {
             get {
-                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Type", resourceCulture);
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Lighting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wave.
+        /// </summary>
+        public static string SpectrumKeyboardBacklightEffectType_Wave {
+            get {
+                return ResourceManager.GetString("SpectrumKeyboardBacklightEffectType_Wave", resourceCulture);
             }
         }
         

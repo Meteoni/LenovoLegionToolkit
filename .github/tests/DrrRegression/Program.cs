@@ -83,6 +83,44 @@ Check(await feature.GetStateAsync() == dynamic100, "Keep the selected 50/100 ran
 PathInfo.Active[0].TargetsInfo[0].SignalInfo!.VerticalSyncFrequencyInMillihertz = 99950;
 Check(await feature.GetStateAsync() == dynamic100, "Round fractional physical timings to the advertised 100 Hz rate");
 
+await feature.SetStateAsync(fixed120);
+screen.TransportFrequencyInMillihertz = 120001;
+await feature.SetStateAsync(dynamic100);
+Check(await feature.GetStateAsync() == dynamic100 && PathInfo.Active[0].TargetsInfo[0].IsBoostRefreshRate,
+    "Direct 50/100 switching survives a persistent 120 Hz transport signal during initialization");
+Check(PathInfo.Active[0].TargetsInfo[0].FrequencyInMillihertz == 50000,
+    "The transport timing mismatch still applies the requested virtual 50 Hz rate");
+await new RefreshRateAutomationStep(fixed120).RunAsync(new AutomationContext(), new AutomationEnvironment(), default);
+await dcAction.RunAsync(new AutomationContext(), new AutomationEnvironment(), default);
+Check(await feature.GetStateAsync() == dynamic100 && PathInfo.Active[0].TargetsInfo[0].IsBoostRefreshRate,
+    "DC Action applies 50/100 with the persistent transport timing mismatch");
+await new RefreshRateAutomationStep(fixed120).RunAsync(new AutomationContext(), new AutomationEnvironment(), default);
+Check(await feature.GetStateAsync() == fixed120 && !PathInfo.Active[0].TargetsInfo[0].IsBoostRefreshRate,
+    "AC Action restores fixed 120 after transport timing mismatch");
+
+screen.IgnorePhysicalModeChanges = true;
+await feature.SetStateAsync(dynamic100);
+Check(await feature.GetStateAsync() == fixed120 && !PathInfo.Active[0].TargetsInfo[0].IsBoostRefreshRate,
+    "Retain upstream fallback when the requested presentation mode never applies");
+screen.IgnorePhysicalModeChanges = false;
+screen.TransportFrequencyInMillihertz = null;
+
+var activePath = PathInfo.Active[0];
+PathInfo.Active = [new PathInfo(activePath.DisplaySource, activePath.Position,
+    screen.CurrentSetting.Resolution, activePath.PixelFormat, activePath.TargetsInfo, 3)];
+await feature.SetStateAsync(fixed120);
+Check(PathInfo.Active[0].IsCloneMember && PathInfo.Active[0].CloneGroupId == 3,
+    "Preserve upstream clone-group handling during static switching");
+
+PathInfo.Active[0].IsModeInformationAvailable = false;
+await feature.SetStateAsync(fixed120);
+Check(await feature.GetStateAsync() == fixed120 && PathInfo.Active[0].IsModeInformationAvailable,
+    "Retain upstream fallback for missing source mode information");
+PathInfo.Active = [];
+await feature.SetStateAsync(fixed120);
+Check(await feature.GetStateAsync() == fixed120,
+    "Retain upstream fallback when an active display path is missing");
+
 OSExtensions.Current = OS.Windows10;
 Check((await feature.GetAllDynamicStatesAsync()).Length == 0, "Do not advertise DRR on Windows 10");
 OSExtensions.Current = OS.Windows11;

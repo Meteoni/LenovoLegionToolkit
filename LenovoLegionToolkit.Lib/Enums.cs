@@ -151,10 +151,25 @@ public enum CustomSpecialKey
 public enum DriverKey
 {
     FnQ = 1,
+    FnF5F6 = 16,
     FnF10 = 32,
     FnF4 = 256,
     FnF8 = 8192,
     FnSpace = 4096,
+}
+
+internal enum DytcFunction : uint
+{
+    FirmwareDefault = 0,
+    Manual = 3,
+    Unknown4 = 4,
+    IntelligentCooling = 5,
+    Auto_UnknownFunction6 = 6,
+    Auto_UnknownFunction7 = 7,
+    Auto_UnknownFunction8 = 8,
+    ItsModeControl = 11,
+    Auto_UnknownFunction13 = 13,
+    Auto_UnknownFunction15 = 15,
 }
 
 public enum FanState
@@ -813,6 +828,24 @@ public enum SpeakerState
     Unmute
 }
 
+public enum ConsumerControlKey
+{
+    FnF1 = 0x00E2,
+    FnF2 = 0x00EA,
+    FnF3 = 0x00E9,
+    FnF12 = 0x0192,
+    FnHome = 0x00CD,
+    FnEnd = 0x00B7,
+    FnPgUp = 0x00B6,
+    FnPgDn = 0x00B5,
+}
+
+public enum KeyboardKey
+{
+    FnI = 0x2D,
+    FnK = 0x91,
+}
+
 public enum SpecialKey
 {
     FnF9 = 1,
@@ -889,8 +922,8 @@ public enum SpectrumKeyboardBacklightEffectType
 {
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Always")]
     Always,
-    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_RainbowScrew")]
-    RainbowScrew,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_SpiralRainbow")]
+    SpiralRainbow,
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_RainbowWave")]
     RainbowWave,
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_ColorChange")]
@@ -901,18 +934,24 @@ public enum SpectrumKeyboardBacklightEffectType
     ColorPulse,
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Smooth")]
     Smooth,
-    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Rain")]
-    Rain,
-    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Ripple")]
-    Ripple,
-    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Type")]
-    Type,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Raining")]
+    Raining,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Ripples")]
+    Ripples,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Lighting")]
+    Lighting,
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_AudioBounce")]
     AudioBounce,
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_AudioRipple")]
     AudioRipple,
     [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_AuroraSync")]
-    AuroraSync
+    AuroraSync,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_HorseRaceLamp")]
+    HorseRaceLamp,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Breath")]
+    Breath,
+    [Display(ResourceType = typeof(Resource), Name = "SpectrumKeyboardBacklightEffectType_Wave")]
+    Wave
 }
 
 public enum SpectrumKeyboardBacklightSpeed
@@ -1100,4 +1139,18 @@ public enum WinKeyState
     Off,
     [Display(ResourceType = typeof(Resource), Name = "WinKeyState_On")]
     On
+}
+
+public enum PStateApplyResult
+{
+    Applied,
+    Skipped,
+    Failed
+}
+
+public enum PStatePinMode
+{
+    Max,
+    Min,
+    None
 }
