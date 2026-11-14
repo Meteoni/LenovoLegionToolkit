@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  UPSTREAM_SHA: 08a111cbf1f604e9749cac26472647270f824e05
-  LLT_VERSION: 2.36.8.6
+  UPSTREAM_SHA: d92cef891cbb40e770125cd72c2a3905009ea0ec
+  LLT_VERSION: 2.36.8.16
 
 jobs:
   build:
@@ -88,7 +88,7 @@ jobs:
       - name: Upload replacement DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: LLT-2.36.8.6-replacement-DLLs-DRR-only-08a111cb
+          name: LLT-2.36.8.16-replacement-DLLs-DRR-only-d92cef89
           path: replacement-dlls/*
           if-no-files-found: error
           retention-days: 90

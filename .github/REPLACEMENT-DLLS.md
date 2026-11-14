@@ -1,10 +1,10 @@
-# LLT 2.36.8.6 replacement DLLs
+# LLT 2.36.8.16 replacement DLLs
 
-Built from official dev commit `08a111cbf1f604e9749cac26472647270f824e05`, with only the configurable DRR changes integrated into the application source. Both assembly and file versions are `2.36.8.6`.
+Built from official dev commit `d92cef891cbb40e770125cd72c2a3905009ea0ec`, with only the configurable DRR changes integrated into the application source. Both assembly and file versions are `2.36.8.16`.
 
 ## Install
 
-1. Run the official updater, confirm the installed version is **2.36.8.6**, and fully exit LLT, including its tray process.
+1. Run the official updater, confirm the installed version is **2.36.8.16**, and fully exit LLT, including its tray process.
 2. Back up `LenovoLegionToolkit.Lib.dll` and `Lenovo Legion Toolkit.dll` in the installation folder.
 3. Replace those two files with the DLLs from this artifact, then restart LLT.
 
@@ -29,7 +29,7 @@ When disabled, official dev does not restore a different saved ITS mode, but sti
 
 ## Build and verification
 
-The replacement workflow compiles the integrated source directly. It verifies that the official `v2.36.8.6` tag resolves to the pinned commit, runs regression checks against the production refresh-rate and Actions sources, and checks both assembly identities and file versions before publishing the artifact. It does not check out a moving upstream branch or apply patches during the build.
+The replacement workflow compiles the integrated source directly. It verifies that the official `v2.36.8.16` tag resolves to the pinned commit, runs regression checks against the production refresh-rate and Actions sources, and checks both assembly identities and file versions before publishing the artifact. It does not check out a moving upstream branch or apply patches during the build.
 
 The earlier successful fork build, run `37579274823`, supplies the reference 50/100 switching behavior: initialize physical 100 Hz, request virtual 50 Hz with boost enabled, and expose that same range in Actions. The new implementation generalizes that behavior to the saved custom pair.
 
