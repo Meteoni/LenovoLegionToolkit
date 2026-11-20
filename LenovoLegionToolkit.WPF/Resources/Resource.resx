@@ -3940,4 +3940,19 @@ Logging will be enabled automatically, if you choose to continue.</value>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="SettingsPage_DynamicRefreshRate_Title" xml:space="preserve">
+    <value>Custom dynamic refresh rate</value>
+  </data>
+  <data name="SettingsPage_DynamicRefreshRate_Message" xml:space="preserve">
+    <value>Set a virtual low rate and a supported physical high rate, then save. Select the rate and enable DRR on the dashboard, or choose the dynamic pair in Actions. Reset restores automatic ranges.</value>
+  </data>
+  <data name="SettingsPage_DynamicRefreshRate_Low" xml:space="preserve">
+    <value>Virtual low refresh rate (Hz)</value>
+  </data>
+  <data name="SettingsPage_DynamicRefreshRate_High" xml:space="preserve">
+    <value>Physical high refresh rate (Hz)</value>
+  </data>
+  <data name="SettingsPage_DynamicRefreshRate_InvalidRange" xml:space="preserve">
+    <value>Enter a positive low rate below the selected high rate.</value>
+  </data>
 </root>

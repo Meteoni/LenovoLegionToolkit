@@ -9902,6 +9902,36 @@ namespace LenovoLegionToolkit.WPF.Resources {
             }
         }
         
+        public static string SettingsPage_DynamicRefreshRate_Title {
+            get {
+                return ResourceManager.GetString("SettingsPage_DynamicRefreshRate_Title", resourceCulture);
+            }
+        }
+
+        public static string SettingsPage_DynamicRefreshRate_Message {
+            get {
+                return ResourceManager.GetString("SettingsPage_DynamicRefreshRate_Message", resourceCulture);
+            }
+        }
+
+        public static string SettingsPage_DynamicRefreshRate_Low {
+            get {
+                return ResourceManager.GetString("SettingsPage_DynamicRefreshRate_Low", resourceCulture);
+            }
+        }
+
+        public static string SettingsPage_DynamicRefreshRate_High {
+            get {
+                return ResourceManager.GetString("SettingsPage_DynamicRefreshRate_High", resourceCulture);
+            }
+        }
+
+        public static string SettingsPage_DynamicRefreshRate_InvalidRange {
+            get {
+                return ResourceManager.GetString("SettingsPage_DynamicRefreshRate_InvalidRange", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Apply the same brightness level across all Windows power plans..
         /// </summary>
